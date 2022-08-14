@@ -1,48 +1,52 @@
-import {FC, ReactNode, useEffect, useMemo, useState} from 'react';
-import {ITree, ITreeItem} from "./ITree";
+import {FC, forwardRef, useMemo} from 'react';
+import {withVirtualScroll} from "../virtual_scroll/VirtualScroll";
+import {useTreeDataLoading} from "./hooks/useTreeDataLoading";
+import {useTreeTraversal} from "./hooks/useTreeTraversal";
 import {TreeElement} from "./tree_element/TreeElement";
+import {TREE_ELEMENT_X_OFFSET, TREE_ELEMENT_Y_OFFSET} from "./constants";
 
 interface ITreeProps {
     treeLink?: string;
+    from?: number;
+    to?: number;
+    itemClassName?: string;
 }
 
-const BASE_TREE_LINK = '/data_samples/sample1.json';
+const BASE_TREE_LINK = '/data_samples/sample_task.json';
+const LIMIT = 25;
 
-export const Tree:FC<ITreeProps> = ({
-    treeLink = BASE_TREE_LINK
-}) => {
-    const [treeData, setTreeData] = useState<ITree | undefined>();
-
-    useEffect(() => {
-        const loadInfo = async () => {
-            const response = await fetch(treeLink);
-            const parsedTreeData = await response.json();
-            setTreeData(parsedTreeData.result);
-        }
-
-        loadInfo().catch((error) => console.log(error));
-    }, [treeLink]);
+const Tree:FC<ITreeProps> = forwardRef<HTMLDivElement, ITreeProps>((
+    { treeLink = BASE_TREE_LINK, from= 0, to= LIMIT, itemClassName = ''},
+    ref
+) => {
+    const treeData = useTreeDataLoading(treeLink);
+    let nextToRender = useTreeTraversal(treeData, from, to);
 
     const componentTree = useMemo(() => {
-        if (treeData === undefined) {
-            return null;
+        let current = nextToRender;
+        let components = [];
+        let index = from;
+        while (current && index < to) {
+            components.push(
+                <TreeElement
+                    label={current.label}
+                    className={itemClassName}
+                    key={current.id}
+                    ref={index === from ? ref : undefined}
+                    style={{ transform: `translate(${(current.level || 0) * TREE_ELEMENT_X_OFFSET}pt, ${index * TREE_ELEMENT_Y_OFFSET}pt)` }}
+                />
+            );
+            current = current.next;
+            index++;
         }
-
-        return (
-            <>
-                {treeData.map((element) => createSubTrees(element))}
-            </>
-        );
-    },[treeData]);
+        return components;
+    }, [nextToRender?.id]);
 
     return (
         <div>
             {componentTree}
         </div>
     )
-}
+});
 
-function createSubTrees(root:ITreeItem):ReactNode {
-    const children = root.children.map((child_node) => createSubTrees(child_node));
-    return <TreeElement label={root.label} key={root.label}>{children}</TreeElement>;
-}
+export const ScrollConnectedTree = withVirtualScroll(Tree);

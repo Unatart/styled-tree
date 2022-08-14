@@ -1,17 +1,18 @@
-import {ReactNode, CSSProperties} from 'react';
+import {ReactNode, CSSProperties, forwardRef} from 'react';
 import './TreeElement.css';
 
 interface ITreeElementProps {
-    label: string;
+    label?: string;
     children?: ReactNode,
     style?: CSSProperties;
+    className?: string;
 }
 
-export function TreeElement({ label, style, children }:ITreeElementProps) {
+export const TreeElement = forwardRef<HTMLDivElement, ITreeElementProps>(({ label, style, children, className }, ref) => {
     return (
-        <div className={"tree-element"} style={style}>
+        <div className={`tree-element ${className}`} style={style} ref={ref}>
             {label}
             {children}
         </div>
     );
-}
+});

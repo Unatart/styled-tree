@@ -1,5 +1,5 @@
 import React from 'react';
-import {Tree} from "./tree/Tree";
+import {ScrollConnectedTree} from "./tree/Tree";
 
 /**
  * Тут пишу все свои идеи и TODO по реализации дерева и скролла:
@@ -15,15 +15,18 @@ import {Tree} from "./tree/Tree";
  * - цветовые темы
  * - иконки разные
  * - collapsed (true/false)
- * - сортировка дерева (?)
  * - отображение размера элементов (по количеству детей, без учета всех внуков, правнуков и т.д.)
  * - возможность загрузки своего списка в формате json (добавить инструкцию в каком виде) + дать список примеров
+ */
+
+/**
+ * TODO: Добавить линтер, невозможно терпеть уже этот код :D
  */
 
 function App() {
   return (
       <>
-          <Tree/>
+          <ScrollConnectedTree/>
           {/*<StylingTool/>*/}
       </>
   );
