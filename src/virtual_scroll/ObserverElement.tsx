@@ -6,5 +6,5 @@ interface IObserverElementProps {
 }
 
 export const ObserverElement = forwardRef<HTMLDivElement, IObserverElementProps>((props, ref) => {
-    return <div ref={ref} id={props.id} className={props.className}/>;
+	return <div ref={ref} id={props.id} className={props.className}/>;
 });

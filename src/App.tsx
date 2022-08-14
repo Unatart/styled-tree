@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {ScrollConnectedTree} from "./tree/Tree";
 
 /**
@@ -19,17 +19,13 @@ import {ScrollConnectedTree} from "./tree/Tree";
  * - возможность загрузки своего списка в формате json (добавить инструкцию в каком виде) + дать список примеров
  */
 
-/**
- * TODO: Добавить линтер, невозможно терпеть уже этот код :D
- */
-
 function App() {
-  return (
-      <>
-          <ScrollConnectedTree/>
-          {/*<StylingTool/>*/}
-      </>
-  );
+	return (
+		<>
+			<ScrollConnectedTree/>
+			{/*<StylingTool/>*/}
+		</>
+	);
 }
 
 export default App;
