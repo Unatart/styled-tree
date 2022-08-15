@@ -1,7 +1,7 @@
 import {ReactNode} from "react";
 
 interface IScrollAreaProps {
-    children?: ReactNode;
+    children?: ReactNode[];
 }
 
 export const ScrollArea = ({ children }: IScrollAreaProps) => {

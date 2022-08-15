@@ -34,7 +34,7 @@ function App() {
 				loadData={loadTreeData}
 				renderElement={renderTreeElement}
 				dataUrl={BASE_TREE_LINK}
-				observerConfig={{ threshold: 0.25 }}
+				observerConfig={{ threshold: 0.1 }}
 			/>
 			{/*<StylingTool/>*/}
 		</>
