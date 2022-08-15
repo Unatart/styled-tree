@@ -4,18 +4,22 @@ export type getNextRenderPointerType<T> = (from: number, to: number, previousPoi
 
 export const getNextRenderPointer = (tree: ITree) => {
 	const stackContext: IConnectedTreeItem[] = [];
-	tree.forEach(element => stackContext.push(element));
+	for (let i = tree.length - 1; i >= 0; i--) {
+		stackContext.push(tree[i]);
+	}
 
 	const updateCurrent = (currentPointer: IConnectedTreeItem, currentPrevPointer?: IConnectedTreeItem) => {
 		currentPointer.level = currentPointer.level ?? 0;
-		currentPointer.children.forEach(child => {
-			child.level = (currentPointer?.level || 0) + 1;
-			stackContext.push(child);
-		});
+		for (let i = currentPointer?.children?.length - 1; i >= 0; i--) {
+			currentPointer.children[i].level = currentPointer.level + 1;
+			stackContext.push(currentPointer.children[i]);
+		}
 		currentPointer.hidden = currentPointer.hidden ?? false;
 		currentPointer.index = currentPrevPointer?.index !== undefined ? currentPrevPointer.index + 1 : 0;
 		currentPointer.prev = currentPointer.prev ?? currentPrevPointer;
+		console.log(stackContext);
 		currentPointer.next = currentPointer.next ?? stackContext.pop();
+		console.log(currentPointer.next);
 	};
 
 	return (from: number, to: number, previousPointer?: IConnectedTreeItem): IConnectedTreeItem | undefined => {
@@ -63,17 +67,23 @@ export const getNextRenderPointer = (tree: ITree) => {
 			return startPointer;
 		}
 
+		console.log("CREATE FROM NONE");
 		let index = 0;
 		let currentPointer = stackContext.pop();
+		console.log("currentPointer", currentPointer);
 		const resultPointer = currentPointer;
-		const currentPrevPointer: IConnectedTreeItem | undefined = undefined;
+		let currentPrevPointer: IConnectedTreeItem | undefined = undefined;
 
 		if (!currentPointer) {
 			return;
 		}
 
 		while (currentPointer && index <= to) {
+			console.log(currentPointer, index <= to, currentPointer && index <= to);
+			console.log(index, to, currentPointer, currentPointer.next);
 			updateCurrent(currentPointer, currentPrevPointer);
+			console.log("after update", currentPointer, currentPointer.next);
+			currentPrevPointer = currentPointer;
 			currentPointer = currentPointer.next;
 			index++;
 		}
