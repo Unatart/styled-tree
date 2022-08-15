@@ -19,8 +19,10 @@ export const loadTreeData = async (url?: string) => {
 
 	const loadInfo = async () => {
 		const response = await fetch(url);
-		const cache = await caches.open(CACHE_STORAGE_NAME);
-		await cache.put(url, response);
+		if ("caches" in window) {
+			const cache = await caches.open(CACHE_STORAGE_NAME);
+			await cache.put(url, response);
+		}
 		const parsedTreeData = await response.json() as {result: ITree};
 		return parsedTreeData.result;
 	};
