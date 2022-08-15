@@ -7,18 +7,18 @@ import {getNextRenderChunkType} from "../getNextRenderChunk";
 const TOP_OBSERVER_ELEMENT_ID = "top-observer-element-id";
 const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
 
-interface IVirtualScrollConfig<T> {
+interface IVirtualScrollConfig<T extends { hidden?: boolean }> {
 	tolerance: number;
 	pageSize: number;
 	elementOffsetPx: number;
 	loadData: (url: string)=> Promise<T[]>;
 	getNextDataChunk: (tree: T[])=> getNextRenderChunkType<T>;
-	renderElement: (data: T, offset: number)=> ReactNode;
+	renderElement: (data: T, offset: number, onClick: (index: number)=> void, index: number)=> ReactNode;
 	observerConfig: IntersectionObserverInit;
 	dataUrl: string;
 }
 
-export function VirtualScroll<T>(config: IVirtualScrollConfig<T>) {
+export const VirtualScroll = <T extends { hidden?: boolean; children?: T[] }>(config: IVirtualScrollConfig<T>) => {
 	const [start, setStart] = useState(0);
 	const [end, setEnd] = useState(config.pageSize);
 	const [renderData, setRenderData] = useState<T[]>([]);
@@ -29,7 +29,7 @@ export function VirtualScroll<T>(config: IVirtualScrollConfig<T>) {
 			if (direction === "up") {
 				const _start = Math.max(start - config.tolerance, 0);
 				const _end = Math.max(end - config.tolerance, config.pageSize);
-				const dataToRender = getNextDataChunkRef.current?.(_start, _end);
+				const dataToRender = getNextDataChunkRef.current?.getNextChunk(_start, _end);
 				if (dataToRender && dataToRender[_start]) {
 					setRenderData(dataToRender);
 					setStart(_start);
@@ -39,7 +39,7 @@ export function VirtualScroll<T>(config: IVirtualScrollConfig<T>) {
 			if (direction === "down") {
 				const _start = start + config.tolerance;
 				const _end = end + config.tolerance;
-				const dataToRender = getNextDataChunkRef.current?.(_start, _end);
+				const dataToRender = getNextDataChunkRef.current?.getNextChunk(_start, _end);
 				if (dataToRender && dataToRender[_start]) {
 					setRenderData(dataToRender);
 					setStart(_start);
@@ -95,20 +95,28 @@ export function VirtualScroll<T>(config: IVirtualScrollConfig<T>) {
 				return;
 			}
 			getNextDataChunkRef.current = config.getNextDataChunk(data);
-			setRenderData(getNextDataChunkRef.current?.(start, end));
+			setRenderData(getNextDataChunkRef.current?.getNextChunk(start, end));
 		});
 	}, []);
 
 	const renderComponents = (renderData: T[]): [ReactNode, number, number] => {
 		const components = [];
-		let i = start;
+		let i: number = start;
 		for (; i < end && renderData[i]; i++) {
-			components.push(config.renderElement(renderData[i], i * config.elementOffsetPx));
+			const onClick = (index: number) => {
+				console.log(index, renderData[index]);
+				getNextDataChunkRef.current?.hideElement(index);
+				const dataToRender = getNextDataChunkRef.current?.getNextChunk(start, end);
+				if (dataToRender) {
+					setRenderData(dataToRender);
+				}
+			};
+			components.push(config.renderElement(renderData[i], i * config.elementOffsetPx, (i) => onClick(i), i));
 		}
 		return [components, start * config.elementOffsetPx, (i - config.tolerance) * config.elementOffsetPx];
 	};
 
-	const [memoComponent, topOffset, bottomOffset] = useMemo(() => renderComponents(renderData), [renderData.length, start, end]);
+	const [memoComponent, topOffset, bottomOffset] = useMemo(() => renderComponents(renderData), [renderData, start, end]);
 	const topHeight = Math.max(45, (topOffset - 45));
 
 	return (
@@ -118,5 +126,5 @@ export function VirtualScroll<T>(config: IVirtualScrollConfig<T>) {
 			<div id={BOTTOM_OBSERVER_ELEMENT_ID} ref={bottomObsElement} className={"intersection-observer"} style={{transform: `translate(0px, ${bottomOffset + 45}px)`}}/>
 		</ScrollArea>
 	);
-}
+};
 

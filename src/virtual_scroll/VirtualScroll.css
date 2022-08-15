@@ -6,7 +6,6 @@
 
 .intersection-observer {
     position: absolute;
-    background-color: aquamarine; /* убрать потом, для тестов */
     width: 100%;
     height: 45px;
     margin: 0 auto;

@@ -4,6 +4,7 @@ import {loadTreeData} from "./request/loadTreeData";
 import {renderTreeElement} from "./tree/tree_element/TreeElement";
 import {getNextRenderChunk} from "./getNextRenderChunk";
 import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, TREE_ELEMENT_Y_OFFSET} from "./constants";
+import {IConnectedTreeItem} from "./tree/ITree";
 
 /**
  * Тут пишу все свои идеи и TODO по реализации дерева и скролла:
@@ -26,7 +27,7 @@ import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, TREE_ELEMENT_Y_OFFSET} f
 function App() {
 	return (
 		<>
-			<VirtualScroll
+			<VirtualScroll<IConnectedTreeItem>
 				tolerance={BASE_TOLERANCE}
 				pageSize={BASE_PAGE_SIZE}
 				elementOffsetPx={TREE_ELEMENT_Y_OFFSET}
