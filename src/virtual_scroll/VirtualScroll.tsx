@@ -2,64 +2,55 @@ import {ReactNode, useEffect, useMemo, useRef, useState} from "react";
 import "./VirtualScroll.css";
 import {ScrollArea} from "./ScrollArea";
 import {useActualCallback} from "../hooks/useActualCallback";
-import {getNextRenderPointerType} from "../getNextRenderPointer";
+import {getNextRenderChunkType} from "../getNextRenderChunk";
 
 const TOP_OBSERVER_ELEMENT_ID = "top-observer-element-id";
 const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
 
-interface IListElement<T> {
-	next?: T;
-	prev?: T;
-	index?: number;
-}
-
-interface IVirtualScrollConfig<T extends IListElement<T>> {
+interface IVirtualScrollConfig<T> {
 	tolerance: number;
 	pageSize: number;
 	elementOffsetPx: number;
 	loadData: (url: string)=> Promise<T[]>;
-	getNextDataPointer: (tree: T[])=> getNextRenderPointerType<T>;
+	getNextDataChunk: (tree: T[])=> getNextRenderChunkType<T>;
 	renderElement: (data: T, offset: number)=> ReactNode;
 	observerConfig: IntersectionObserverInit;
 	dataUrl: string;
 }
 
-export const VirtualScroll = <T extends IListElement<T>>(config: IVirtualScrollConfig<T>) => {
+export function VirtualScroll<T>(config: IVirtualScrollConfig<T>) {
 	const [start, setStart] = useState(0);
 	const [end, setEnd] = useState(config.pageSize);
-	const [data, setData] = useState<T[] | undefined>(undefined);
-	const [renderHeadElement, setRenderHeadElement] = useState<T | undefined>(undefined);
-	const getNextDataPointerRef = useRef<getNextRenderPointerType<T> | undefined>(undefined);
+	const [renderData, setRenderData] = useState<T[]>([]);
+	const getNextDataChunkRef = useRef<getNextRenderChunkType<T> | undefined>(undefined);
 
 	const update = useActualCallback((direction: "up" | "down") => {
-		if (data) {
+		if (getNextDataChunkRef.current) {
 			if (direction === "up") {
 				const _start = Math.max(start - config.tolerance, 0);
-				if (renderHeadElement?.index === _start) {
-					return;
-				}
 				const _end = Math.max(end - config.tolerance, config.pageSize);
-				setStart(_start);
-				setEnd(_end);
-				const dataHead =  getNextDataPointerRef.current?.(_start, _end, renderHeadElement);
-				setRenderHeadElement(dataHead);
+				const dataToRender = getNextDataChunkRef.current?.(_start, _end);
+				if (dataToRender && dataToRender[_start]) {
+					setRenderData(dataToRender);
+					setStart(_start);
+					setEnd(_end);
+				}
 			}
 			if (direction === "down") {
-				if (renderHeadElement?.index === start + config.tolerance) {
-					return;
+				const _start = start + config.tolerance;
+				const _end = end + config.tolerance;
+				const dataToRender = getNextDataChunkRef.current?.(_start, _end);
+				if (dataToRender && dataToRender[_start]) {
+					setRenderData(dataToRender);
+					setStart(_start);
+					setEnd(_end);
 				}
-				const dataHead =  getNextDataPointerRef.current?.(start + config.tolerance, end + config.tolerance, renderHeadElement);
-				if (!dataHead) {
-					return;
-				}
-				setEnd((prevState) => prevState + config.tolerance);
-				setStart((prevState) => prevState + config.tolerance);
-				setRenderHeadElement(dataHead);
 			}
 		}
 	});
 
 	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => {
+		// TODO: тут по хорошему поиграться с intersectionRatio и размером объекта
 		if (entry.intersectionRatio > 0) {
 			update("up");
 		}
@@ -97,34 +88,27 @@ export const VirtualScroll = <T extends IListElement<T>>(config: IVirtualScrollC
 	}, [topObserver, bottomObserver]);
 
 	useEffect(() => {
-		config.loadData(config.dataUrl)
-			.then((data) => {
-				setData(data);
-				setTopObserver(new IntersectionObserver(onTopIntersectionCallback, config.observerConfig));
-				setBottomObserver(new IntersectionObserver(onBottomIntersectionCallback, config.observerConfig));
-				if (getNextDataPointerRef.current || renderHeadElement?.index === start) {
-					return;
-				}
-				getNextDataPointerRef.current = config.getNextDataPointer(data);
-				const dataHead = getNextDataPointerRef.current?.(start, end, renderHeadElement);
-				setRenderHeadElement(dataHead);
-			});
+		config.loadData(config.dataUrl).then((data) => {
+			setTopObserver(new IntersectionObserver(onTopIntersectionCallback, config.observerConfig));
+			setBottomObserver(new IntersectionObserver(onBottomIntersectionCallback, config.observerConfig));
+			if (getNextDataChunkRef.current || renderData.length) {
+				return;
+			}
+			getNextDataChunkRef.current = config.getNextDataChunk(data);
+			setRenderData(getNextDataChunkRef.current?.(start, end));
+		});
 	}, []);
 
-	// TODO: хранить Refs List и обновлять данные и сдвиг ? чтобы было меньше обновлений
-	const renderComponents = (head?: T): [ReactNode, number, number] => {
-		let current = head;
+	const renderComponents = (renderData: T[]): [ReactNode, number, number] => {
 		const components = [];
-		let index = start;
-		while (current && index < end) {
-			components.push(config.renderElement(current, index * config.elementOffsetPx));
-			current = current.next;
-			index++;
+		let i = start;
+		for (; i < end && renderData[i]; i++) {
+			components.push(config.renderElement(renderData[i], i * config.elementOffsetPx));
 		}
-		return [components, start * config.elementOffsetPx, (index - config.tolerance) * config.elementOffsetPx];
+		return [components, start * config.elementOffsetPx, (i - config.tolerance) * config.elementOffsetPx];
 	};
 
-	const [memoComponent, topOffset, bottomOffset] = useMemo(() => renderComponents(renderHeadElement), [renderHeadElement?.index]);
+	const [memoComponent, topOffset, bottomOffset] = useMemo(() => renderComponents(renderData), [renderData.length, start, end]);
 	const topHeight = Math.max(45, (topOffset - 45));
 
 	return (
@@ -134,4 +118,5 @@ export const VirtualScroll = <T extends IListElement<T>>(config: IVirtualScrollC
 			<div id={BOTTOM_OBSERVER_ELEMENT_ID} ref={bottomObsElement} className={"intersection-observer"} style={{transform: `translate(0px, ${bottomOffset + 45}px)`}}/>
 		</ScrollArea>
 	);
-};
+}
+
