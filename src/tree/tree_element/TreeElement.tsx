@@ -1,19 +1,9 @@
-import {ReactNode, CSSProperties, forwardRef} from "react";
 import "./TreeElement.css";
+import {IConnectedTreeItem} from "../ITree";
+import {TREE_ELEMENT_X_OFFSET} from "../../constants";
 
-type ITreeElementProps = {
-	label?: string;
-	children?: ReactNode;
-	style?: CSSProperties;
-	className?: string;
-};
-
-export const TreeElement = forwardRef<HTMLDivElement, ITreeElementProps>((
-	{label, style, children, className},
-	ref
-) => (
-	<div className={`tree-element ${className}`} style={style} ref={ref}>
-		{label}
-		{children}
+export const renderTreeElement = (data: IConnectedTreeItem, offsetX: number) => (
+	<div className={"tree-element"} key={data.id} style={{transform: `translate(${(data.level || 0) * TREE_ELEMENT_X_OFFSET}pt, ${offsetX}pt)`}}>
+		{data.label}
 	</div>
-));
+);

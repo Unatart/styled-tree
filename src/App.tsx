@@ -1,5 +1,9 @@
 import React from "react";
-import {ScrollConnectedTree} from "./tree/Tree";
+import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
+import {loadTreeData} from "./hooks/useTreeDataLoading";
+import {renderTreeElement} from "./tree/tree_element/TreeElement";
+import {getNextRenderPointer} from "./getNextRenderPointer";
+import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, TREE_ELEMENT_Y_OFFSET} from "./constants";
 
 /**
  * Тут пишу все свои идеи и TODO по реализации дерева и скролла:
@@ -22,7 +26,16 @@ import {ScrollConnectedTree} from "./tree/Tree";
 function App() {
 	return (
 		<>
-			<ScrollConnectedTree/>
+			<VirtualScroll
+				tolerance={BASE_TOLERANCE}
+				pageSize={BASE_PAGE_SIZE}
+				elementOffsetPx={TREE_ELEMENT_Y_OFFSET}
+				getNextDataPointer={getNextRenderPointer}
+				loadData={loadTreeData}
+				renderElement={renderTreeElement}
+				dataUrl={BASE_TREE_LINK}
+				observerConfig={{ threshold: 0.25 }}
+			/>
 			{/*<StylingTool/>*/}
 		</>
 	);
