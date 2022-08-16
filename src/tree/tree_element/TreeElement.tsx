@@ -1,14 +1,23 @@
-import "./TreeElement.css";
 import {IConnectedTreeItem} from "../ITree";
-import {TREE_ELEMENT_X_OFFSET} from "../../constants";
+import {CSSProperties, FC} from "react";
 
-export const renderTreeElement = (data: IConnectedTreeItem, offsetX: number, onClick: (index: number)=> void, index: number) => {
+export interface ITreeElementProps {
+	data: IConnectedTreeItem;
+	style: CSSProperties;
+	toggleHidden: (index: number)=> void;
+}
+
+export const renderTreeElement: FC<ITreeElementProps> = ({
+	data,
+	style,
+	toggleHidden
+}) => {
 	return (
 		<div
 			className={"tree-element"}
 			key={data.id}
-			style={{ transform: `translate(${(data.level || 0) * TREE_ELEMENT_X_OFFSET}px, ${offsetX}px)` }}
-			onClick={() => onClick(index)}
+			style={style}
+			onClick={() => toggleHidden(data.index || 0)}
 		>
 			{data.label}
 		</div>

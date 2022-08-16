@@ -280,7 +280,7 @@
                 "label": "Applications",
                 "children": [
                   {
-                    "id": "1_1",
+                    "id": "55 joke",
                     "label": "Calendar",
                     "children": []
                   }
@@ -550,7 +550,7 @@
                     "id": "105",
                     "label": "MUI",
                     "children": [{
-                      "id": "3_1",
+                      "id": "106",
                       "label": "index.js",
                       "children": []
                     }]

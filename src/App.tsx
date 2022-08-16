@@ -2,7 +2,7 @@ import React from "react";
 import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
 import {loadTreeData} from "./request/loadTreeData";
 import {renderTreeElement} from "./tree/tree_element/TreeElement";
-import {getNextRenderChunk} from "./getNextRenderChunk";
+import {getNextRenderChunk} from "./tree/getNextRenderChunk";
 import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, TREE_ELEMENT_Y_OFFSET} from "./constants";
 import {IConnectedTreeItem} from "./tree/ITree";
 
@@ -35,7 +35,7 @@ function App() {
 				loadData={loadTreeData}
 				renderElement={renderTreeElement}
 				dataUrl={BASE_TREE_LINK}
-				observerConfig={{ threshold: 0.1 }}
+				observerConfig={{ threshold: 0.25 }}
 			/>
 			{/*<StylingTool/>*/}
 		</>

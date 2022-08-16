@@ -5,8 +5,10 @@ export interface ITreeItem {
 }
 
 export interface IConnectedTreeItem extends ITreeItem {
-    hidden?: boolean;
+    hiddenChildren?: boolean;
     level?: number;
+    parent?: IConnectedTreeItem;
+    index?: number;
 }
 
 export type ITree = IConnectedTreeItem[];
