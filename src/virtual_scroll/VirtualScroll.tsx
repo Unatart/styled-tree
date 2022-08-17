@@ -9,7 +9,7 @@ import {
 import "./VirtualScroll.css";
 import {ScrollArea} from "./ScrollArea";
 import {useActualCallback} from "../hooks/useActualCallback";
-import {getNextRenderChunkType, ITreeManagerConfig, treeActionType} from "../tree/createTreeManager";
+import {TreeManagerType, ITreeManagerConfig, treeActionType} from "../tree/createTreeManager";
 import {IConnectedTreeItem} from "../tree/ITree";
 import {useIntersectionObserver} from "../IntersectionObserver/useIntersectionObserver";
 import {IntersectionObserverElement} from "../IntersectionObserver/IntersectionObserverElement";
@@ -25,7 +25,7 @@ interface IVirtualScrollProps<T> {
 	ScrollItem: ComponentType<ITreeElementProps> & { ref?: Ref<HTMLDivElement> };
 
 	loadData: (url: string)=> Promise<T[]>;
-	getNextDataChunk: (tree: T[], config: ITreeManagerConfig)=> getNextRenderChunkType<T>;
+	getNextDataChunk: (tree: T[], config: ITreeManagerConfig)=> TreeManagerType<T>;
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
@@ -37,7 +37,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	ScrollItem
 }: IVirtualScrollProps<T>) => {
 	const [renderData, setRenderData] = useState<T[]>([]);
-	const getNextDataChunkRef = useRef<getNextRenderChunkType<T> | undefined>(undefined);
+	const getNextDataChunkRef = useRef<TreeManagerType<T> | undefined>(undefined);
 	const elementRef = useRef<HTMLDivElement>(null);
 
 	const updateData = useActualCallback((direction: treeActionType, isIntersecting: boolean) => {
@@ -69,7 +69,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	const startIndex = renderData[0]?.index || 0;
 	const toggleHidden = useCallback((i: number) => {
 		if (getNextDataChunkRef.current) {
-			const result = getNextDataChunkRef.current.toggleHideElement(i);
+			const result = getNextDataChunkRef.current.toggleHide(i);
 			if (result) {
 				const dataToRender = getNextDataChunkRef.current?.getNextChunk("update");
 				setRenderData(dataToRender);

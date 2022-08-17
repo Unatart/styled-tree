@@ -7,9 +7,9 @@ export interface ITreeManagerConfig {
 	tolerance: number;
 }
 
-export type getNextRenderChunkType<T> = {
+export type TreeManagerType<T> = {
 	getNextChunk: (action: treeActionType)=> T[];
-	toggleHideElement: (index: number)=> boolean;
+	toggleHide: (index: number)=> boolean;
 }
 
 // TODO: рефачить только по необходимости или после написания тестов -_-
@@ -23,8 +23,7 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 	let chunk: IConnectedTreeItem[] = [];
 	let chunkLimits: [number, number] = [0, 0];
 
-
-	const toggleHideElement = (index: number): boolean => {
+	const toggleHide = (index: number) => {
 		if (!treeTraverseArray[index] || treeTraverseArray[index].children.length === 0) {
 			return false;
 		}
@@ -58,87 +57,82 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 
 		if (action === "update") {
 			chunkLimits[1] = to > 0 ? to : to + config.pageSize;
+			// console.log(chunkLimits);
 			return prevLimits;
 		}
 
 		let from = chunkLimits[0];
 		if (action === "down") {
-			from += config.tolerance;
-			to += config.tolerance;
-			if (to > treeTraverseArray.length && stackContext.length === 0) {
-				from -= to - treeTraverseArray.length;
-				to -= to - treeTraverseArray.length;
+			// console.log(to, treeTraverseArray.length, stackContext.length, to > treeTraverseArray.length - 1 && stackContext.length === 0);
+			if (to + config.tolerance > treeTraverseArray.length - 1 && stackContext.length === 0) {
+				from -= (to - treeTraverseArray.length);
+				to = treeTraverseArray.length;
+			} else {
+				from += config.tolerance;
+				to += config.tolerance;
 			}
 
 			chunkLimits = [from, to];
+			// console.log(chunkLimits);
 			return prevLimits;
 		}
 
 		if (action === "up") {
+			// console.log(chunkLimits);
 			chunkLimits = [Math.max(0, from - config.tolerance), Math.max(config.pageSize, to - config.tolerance)];
 		}
 		return prevLimits;
 	};
 
-	const getNextChunk = (action: "up" | "down" | "update") => {
-		const [prevStart, prevEnd] = setLimits(action);
-
-		// console.log(prevStart, prevEnd, chunkLimits);
-		let from = chunkLimits[0];
-		const to = chunkLimits[1];
-		// Едем вниз или перерисовываем текущее
-		let result: IConnectedTreeItem[] = [];
-		if (action !== "up") {
-			result = chunk.filter((element) => element.index !== undefined && element.index >= from && element.index <= prevEnd);
-			// console.log("sliced:", [...result], from, prevEnd);
-			let i = action === "update" ? from : prevEnd;
-			let end = to;
-
-			let hidden_level: number | undefined = undefined;
-			while (i < end) {
-				if (treeTraverseArray[i] === undefined) {
-					const addedPointer = traverseNext(i);
-					if (addedPointer === undefined) {
-						break;
-					}
+	const goDown = (from: number, to: number, prevStart: number, prevEnd: number, i: number) => {
+		const result = chunk.filter((element) => element.index !== undefined && element.index >= from && element.index <= prevEnd);
+		let end = to;
+		let hidden_level: number | undefined = undefined;
+		while (i < end) {
+			if (treeTraverseArray[i] === undefined) {
+				const addedPointer = traverseNext(i);
+				if (addedPointer === undefined) {
+					break;
 				}
-				// console.log(i, treeTraverseArray[i]);
-				if (treeTraverseArray[i].hiddenChildren) {
-					hidden_level = treeTraverseArray[i].level;
-					result.push(treeTraverseArray[i]);
-					// console.log("push parent", [...result], hidden_level);
-					i++;
-					continue;
-				}
-				const level = treeTraverseArray[i].level;
-				if (hidden_level !== undefined && level !== undefined && level > hidden_level) {
-					i++;
-					end++;
-					// console.log("continue");
-					continue;
-				}
-				hidden_level = undefined;
+			}
+			// console.log(i, treeTraverseArray[i]);
+			if (treeTraverseArray[i].hiddenChildren) {
+				hidden_level = treeTraverseArray[i].level;
 				result.push(treeTraverseArray[i]);
+				// console.log("push parent", [...result], hidden_level);
 				i++;
+				continue;
 			}
-
-			chunk = result;
-			chunkLimits[1] = end;
-
-			console.log("DOWN", result, treeTraverseArray);
-			if (result.length >= end - from) {
-				return result;
+			const level = treeTraverseArray[i].level;
+			if (hidden_level !== undefined && level !== undefined && level > hidden_level) {
+				i++;
+				end++;
+				// console.log("continue");
+				continue;
 			}
-			console.log("result length is small");
-			from -= end - to;
-			// console.log(from);
+			hidden_level = undefined;
+			result.push(treeTraverseArray[i]);
+			i++;
 		}
 
-		// Едем вверх
-		let i = prevStart - 1;
-		let start = from;
-		result = chunk.filter((element) => element.index !== undefined && element.index >= prevStart && element.index < to);
+		chunk = result;
+		const lastElement = result[result.length - 1].index;
+		chunkLimits[1] = lastElement ?  lastElement + 1 : end - 1;
+
+		// console.log("DOWN", result, treeTraverseArray);
+		if (result.length >= end - 1 - from) {
+			return result;
+		}
+		if (stackContext.length === 0 && chunkLimits[0] === 0) {
+			return result;
+		}
+	};
+
+	const goUp = (from: number, to: number, startIndex: number) => {
+		const result = chunk.filter((element) => element.index !== undefined && element.index >= startIndex && element.index < to);
 		// console.log("sliced:", [...result], prevStart, to);
+		let start = from;
+		let i = startIndex - 1;
 		while ( i >= Math.max(start, 0) ) {
 			let child: IConnectedTreeItem | undefined = treeTraverseArray[i];
 			let firstParentWithHiddenChild: IConnectedTreeItem | undefined;
@@ -163,13 +157,35 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		chunk = result;
 		chunkLimits = [Math.max(start, 0), to];
 
-		console.log("UP:", result, treeTraverseArray);
+		// console.log("UP:", result, treeTraverseArray);
 		return result;
+	};
+
+	const getNextChunk = (action: "up" | "down" | "update") => {
+		// console.log(treeTraverseArray);
+		const [prevStart, prevEnd] = setLimits(action);
+
+		let from = chunkLimits[0];
+		let to = chunkLimits[1];
+
+		if (action !== "up") {
+			const result = goDown(from, to, prevStart, prevEnd, action === "update" ? from : prevEnd);
+			if (result && result.length) {
+				return result;
+			}
+
+			from = chunkLimits[1] - config.tolerance;
+			to = chunkLimits[1];
+			return goUp(from, to, to);
+		}
+
+		// console.log(from, to, prevStart, prevEnd);
+		return goUp(from, to, prevStart);
 	};
 
 	return {
 		getNextChunk,
-		toggleHideElement
+		toggleHide
 	};
 };
 
