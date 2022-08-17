@@ -1,18 +1,38 @@
 import {IConnectedTreeItem, ITree} from "./ITree";
 
-export type getNextRenderChunkType<T> = {
-	getNextChunk: (action: "up" | "down" | "update")=> T[];
-	hideElement: (index: number)=> void;
+export type treeActionType = "up" | "down" | "update";
+
+export interface ITreeManagerConfig {
+	pageSize: number;
+	tolerance: number;
 }
 
-export const getNextRenderChunk = (tree: ITree, pageSize: number, tolerance: number) => {
+export type getNextRenderChunkType<T> = {
+	getNextChunk: (action: treeActionType)=> T[];
+	toggleHideElement: (index: number)=> boolean;
+}
+
+// TODO: рефачить только по необходимости или после написания тестов -_-
+export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 	const treeTraverseArray: IConnectedTreeItem[] = [];
-	let chunk: IConnectedTreeItem[] = [];
-	let chunkLimits: [number, number] = [0, 0];
 	const stackContext: IConnectedTreeItem[] = [];
 	for (let i = tree.length - 1; i >= 0; i--) {
 		stackContext.push(tree[i]);
 	}
+
+	let chunk: IConnectedTreeItem[] = [];
+	let chunkLimits: [number, number] = [0, 0];
+
+
+	const toggleHideElement = (index: number): boolean => {
+		if (!treeTraverseArray[index] || treeTraverseArray[index].children.length === 0) {
+			return false;
+		}
+
+		treeTraverseArray[index].hiddenChildren = !treeTraverseArray[index].hiddenChildren;
+		chunk = [];
+		return true;
+	};
 
 	const traverseNext = (index: number) => {
 		const pointer = stackContext.pop();
@@ -37,14 +57,14 @@ export const getNextRenderChunk = (tree: ITree, pageSize: number, tolerance: num
 		let to = chunkLimits[1];
 
 		if (action === "update") {
-			chunkLimits[1] = to > 0 ? to : to + pageSize;
+			chunkLimits[1] = to > 0 ? to : to + config.pageSize;
 			return prevLimits;
 		}
 
 		let from = chunkLimits[0];
 		if (action === "down") {
-			from += tolerance;
-			to += tolerance;
+			from += config.tolerance;
+			to += config.tolerance;
 			if (to > treeTraverseArray.length && stackContext.length === 0) {
 				from -= to - treeTraverseArray.length;
 				to -= to - treeTraverseArray.length;
@@ -55,7 +75,7 @@ export const getNextRenderChunk = (tree: ITree, pageSize: number, tolerance: num
 		}
 
 		if (action === "up") {
-			chunkLimits = [Math.max(0, from - tolerance), Math.max(pageSize, to - tolerance)];
+			chunkLimits = [Math.max(0, from - config.tolerance), Math.max(config.pageSize, to - config.tolerance)];
 		}
 		return prevLimits;
 	};
@@ -147,19 +167,9 @@ export const getNextRenderChunk = (tree: ITree, pageSize: number, tolerance: num
 		return result;
 	};
 
-	const hideElement = (index: number): boolean => {
-		if (!treeTraverseArray[index] || treeTraverseArray[index].children.length === 0) {
-			return false;
-		}
-
-		treeTraverseArray[index].hiddenChildren = !treeTraverseArray[index].hiddenChildren;
-		chunk = [];
-		return true;
-	};
-
 	return {
 		getNextChunk,
-		hideElement
+		toggleHideElement
 	};
 };
 

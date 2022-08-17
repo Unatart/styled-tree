@@ -5,6 +5,4 @@ interface IScrollAreaProps {
     style?: CSSProperties;
 }
 
-export const ScrollArea = ({ children, style }: IScrollAreaProps) => {
-	return <div className={"virtual-scroll"} style={style}>{children}</div>;
-};
+export const ScrollArea = ({ children, style }: IScrollAreaProps) => <div className={"virtual-scroll"} style={style}>{children}</div>;

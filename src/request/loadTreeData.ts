@@ -27,9 +27,5 @@ export const loadTreeData = async (url?: string) => {
 		return parsedTreeData.result;
 	};
 
-	return loadInfo()
-		.catch(error => {
-			console.log(`Caught error while loading tree. Filename: ${url}. Error: `, error);
-			return error;
-		});
+	return loadInfo().catch(error => Promise.reject(`Caught error while loading tree. Filename: ${url}. Error: ${error}`));
 };

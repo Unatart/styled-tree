@@ -1,18 +1,14 @@
 import React from "react";
 import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
 import {loadTreeData} from "./request/loadTreeData";
-import {renderTreeElement} from "./tree/tree_element/TreeElement";
-import {getNextRenderChunk} from "./tree/getNextRenderChunk";
-import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, TREE_ELEMENT_Y_OFFSET} from "./constants";
+import {TreeElementWithRef} from "./tree/tree_element/TreeElement";
+import {createTreeManager} from "./tree/createTreeManager";
+import {
+	BASE_PAGE_SIZE,
+	BASE_TOLERANCE,
+	BASE_TREE_LINK
+} from "./constants";
 import {IConnectedTreeItem} from "./tree/ITree";
-
-/**
- * Тут пишу все свои идеи и TODO по реализации дерева и скролла:
- * - корнеркейсы:  очень длинный список, список с большой вложенностью, маленький(обычный) список, пустой список
- * - должны хранить ссылку на уровень и на элемент в уровне, где остановились
- * - виртуализация загрузки дерева вглубь и вширину (возможно единый метод с помощью двух ссылок выше)
- * - IntersectionObserver
- */
 
 /**
  * Отдельно пишу TODO по стилям и кастомизации:
@@ -28,14 +24,12 @@ function App() {
 	return (
 		<>
 			<VirtualScroll<IConnectedTreeItem>
-				tolerance={BASE_TOLERANCE}
-				pageSize={BASE_PAGE_SIZE}
-				elementOffsetPx={TREE_ELEMENT_Y_OFFSET}
-				getNextDataChunk={getNextRenderChunk}
+				getNextDataChunk={createTreeManager}
 				loadData={loadTreeData}
-				renderElement={renderTreeElement}
+				ScrollItem={TreeElementWithRef}
 				dataUrl={BASE_TREE_LINK}
 				observerConfig={{ threshold: 0.25 }}
+				treeManagerConfig={{ pageSize: BASE_PAGE_SIZE, tolerance: BASE_TOLERANCE }}
 			/>
 			{/*<StylingTool/>*/}
 		</>

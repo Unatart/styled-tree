@@ -1,25 +1,27 @@
 import {IConnectedTreeItem} from "../ITree";
-import {CSSProperties, FC} from "react";
+import {forwardRef, Ref} from "react";
+import {TREE_ELEMENT_X_OFFSET_PX} from "../../constants";
+import "./TreeElement.css";
 
 export interface ITreeElementProps {
 	data: IConnectedTreeItem;
-	style: CSSProperties;
+	index: number;
+	height: number;
 	toggleHidden: (index: number)=> void;
 }
 
-export const renderTreeElement: FC<ITreeElementProps> = ({
-	data,
-	style,
-	toggleHidden
-}) => {
+const TreeElement = ({ data, index, toggleHidden, height }: ITreeElementProps, ref: Ref<HTMLDivElement>) => {
 	return (
 		<div
 			className={"tree-element"}
-			key={data.id}
-			style={style}
-			onClick={() => toggleHidden(data.index || 0)}
+			key={index}
+			ref={ref}
+			style={{ transform: `translate(${(data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px, ${index * height}px)` }}
+			onClick={() => toggleHidden(data.index || index)}
 		>
 			{data.label}
 		</div>
 	);
 };
+
+export const TreeElementWithRef = forwardRef<HTMLDivElement, ITreeElementProps>(TreeElement);

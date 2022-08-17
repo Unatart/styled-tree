@@ -1,0 +1,8 @@
+.tree-element {
+    z-index: 1;
+    position: absolute;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22pt;
+    max-height: 70pt;
+    padding-bottom: 10pt;
+}

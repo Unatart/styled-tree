@@ -2,15 +2,3 @@
     position: relative;
     min-height: 100vh;
 }
-
-.intersection-observer {
-    position: absolute;
-    width: 100%;
-    height: 45px;
-    margin: 0 auto;
-}
-
-.virtual-scroll-item {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 15pt;
-}
