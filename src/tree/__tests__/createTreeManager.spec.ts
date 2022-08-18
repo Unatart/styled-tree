@@ -212,7 +212,7 @@ describe("createTreeManager", () => {
 
 	describe("toggleHide + getNextChunk", () => {
 		describe("- toggleHide closes element", () => {
-			it("element with field hiddenChildren is in result but his children don't", () => {
+			it("element with field hiddenChildren is in result, but his children don't", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
 				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 7 });
 				const beforeResult = treeManager.getNextChunk("update");
@@ -230,27 +230,39 @@ describe("createTreeManager", () => {
 			it("elements consistent while scrolling down and up after hide", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
 				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 2 });
-				const beforeResult = treeManager.getNextChunk("update");
-				const children = beforeResult[1].children;
-				// console.log(children);
+				treeManager.getNextChunk("update");
 				treeManager.toggleHide(1);
 				const afterToggleSnapshot = treeManager.getNextChunk("update");
-				console.log(afterToggleSnapshot[0].index, afterToggleSnapshot[afterToggleSnapshot.length - 1].index);
 				const snapshotDown1 = treeManager.getNextChunk("down");
-				console.log(snapshotDown1[0].index, snapshotDown1[snapshotDown1.length - 1].index);
-				const snapshotDown2 = treeManager.getNextChunk("down");
-				console.log(snapshotDown2[0].index, snapshotDown2[snapshotDown2.length - 1].index);
+				treeManager.getNextChunk("down");
 				const snapshotUp1 = treeManager.getNextChunk("up");
-				console.log(snapshotUp1[0].index, snapshotUp1[snapshotUp1.length - 1].index);
+				expect(snapshotUp1[0].index).toEqual(1);
+				expect(snapshotUp1[snapshotUp1.length - 1].index).toEqual(snapshotDown1[snapshotDown1.length - 1].index);
 				const snapshotUp2 = treeManager.getNextChunk("up");
-				// expect(snapshotUp1).toEqual(snapshotDown1);
-				// expect(snapshotUp2).toEqual(afterToggleSnapshot);
+				expect(snapshotUp2[0].index).toEqual(0);
+				expect(snapshotUp2[snapshotUp2.length - 1].index).toEqual(afterToggleSnapshot[afterToggleSnapshot.length - 1].index);
 			});
 		});
 
 		describe("- toggleHide opens element", () => {
 			it("element with field hiddenChildren stays in result, result got all non hidden children on inner levels", () => {
-				//
+				const tree = genTreeByLevels([3, 2, 1], 0);
+				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 2 });
+				treeManager.getNextChunk("update");
+				treeManager.toggleHide(1);
+				let result = treeManager.getNextChunk("update");
+				const childIndex = result[1].children[0].index;
+				treeManager.toggleHide(0);
+				treeManager.getNextChunk("update");
+				treeManager.toggleHide(0);
+				result = treeManager.getNextChunk("update");
+				let oneChildClosed = true;
+				for (let i = 0; i < result.length; i++) {
+					if (result[i].index === childIndex) {
+						oneChildClosed = false;
+					}
+				}
+				expect(oneChildClosed).toBeTruthy();
 			});
 		});
 	});

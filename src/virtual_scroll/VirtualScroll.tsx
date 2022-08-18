@@ -14,6 +14,7 @@ import {IConnectedTreeItem} from "../tree/ITree";
 import {useIntersectionObserver} from "../IntersectionObserver/useIntersectionObserver";
 import {IntersectionObserverElement} from "../IntersectionObserver/IntersectionObserverElement";
 import {ITreeElementProps} from "../tree/tree_element/TreeElement";
+import {TREE_ELEMENT_X_OFFSET_PX} from "../constants";
 
 const TOP_OBSERVER_ELEMENT_ID = "top-observer-element-id";
 const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
@@ -33,8 +34,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	observerConfig,
 	treeManagerConfig,
 	loadData,
-	getNextDataChunk,
-	ScrollItem
+	getNextDataChunk
 }: IVirtualScrollProps<T>) => {
 	const [renderData, setRenderData] = useState<T[]>([]);
 	const getNextDataChunkRef = useRef<TreeManagerType<T> | undefined>(undefined);
@@ -77,20 +77,31 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		}
 	}, []);
 
+	console.log(renderData);
 	const height = useMemo(() => elementRef.current?.getBoundingClientRect().height || 0, [!!elementRef.current]);
-	return useMemo(() => (
+	return (
 		<ScrollArea style={{paddingTop: `${startIndex * height}px`}}>
 			<IntersectionObserverElement
-				id={TOP_OBSERVER_ELEMENT_ID}
+				key={TOP_OBSERVER_ELEMENT_ID}
 				ref={topObsElement}
 			/>
-			{renderData.map((data, index) => <ScrollItem {...{data, index, toggleHidden, height, ref: index === 0 ? elementRef : null}}/>)}
+			{renderData.map((data, index) => (
+				<div
+					className={"tree-element"}
+					key={index}
+					ref={index === 0 ? elementRef : null}
+					style={{ transform: `translate(${(data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px, ${index * height}px)` }}
+					onClick={() => toggleHidden(data.index || index)}
+				>
+					{`${data.label} ${data.hiddenChildren ? "(h)" : ""}`}
+				</div>
+			))}
 			<IntersectionObserverElement
-				id={BOTTOM_OBSERVER_ELEMENT_ID}
+				key={BOTTOM_OBSERVER_ELEMENT_ID}
 				ref={bottomObsElement}
 				style={{transform: `translateY(${(renderData.length - 1) * height}px)`}}
 			/>
 		</ScrollArea>
-	), [renderData, height]);
+	);
 };
 
