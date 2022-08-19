@@ -1,105 +1,188 @@
-import {
-	ComponentType,
-	Ref,
-	useCallback,
-	useEffect, useMemo,
-	useRef,
-	useState
-} from "react";
+import {useCallback, useEffect, useState} from "react";
 import "./VirtualScroll.css";
 import {ScrollArea} from "./ScrollArea";
 import {useActualCallback} from "../hooks/useActualCallback";
-import {TreeManagerType, ITreeManagerConfig, treeActionType} from "../tree/createTreeManager";
+import {ITreeManagerConfig, treeActionType, TreeManagerType} from "../tree/createTreeManager";
 import {IConnectedTreeItem} from "../tree/ITree";
 import {useIntersectionObserver} from "../IntersectionObserver/useIntersectionObserver";
 import {IntersectionObserverElement} from "../IntersectionObserver/IntersectionObserverElement";
-import {ITreeElementProps} from "../tree/tree_element/TreeElement";
-import {TREE_ELEMENT_X_OFFSET_PX} from "../constants";
+import {ITreeElementProps} from "../tree/tree_element/createTreeElement";
+import {useDataManager} from "../hooks/useDataManager";
+import {IScrollElementResult} from "./IVirtualScroll";
 
 const TOP_OBSERVER_ELEMENT_ID = "top-observer-element-id";
 const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
 
 interface IVirtualScrollProps<T> {
 	dataUrl: string;
+	tolerance: number;
 	observerConfig: IntersectionObserverInit;
 	treeManagerConfig: ITreeManagerConfig;
-	ScrollItem: ComponentType<ITreeElementProps> & { ref?: Ref<HTMLDivElement> };
-
+	createScrollItem: (props: ITreeElementProps)=> IScrollElementResult;
 	loadData: (url: string)=> Promise<T[]>;
-	getNextDataChunk: (tree: T[], config: ITreeManagerConfig)=> TreeManagerType<T>;
+	getTreeManager: (tree: T[], config: ITreeManagerConfig)=> TreeManagerType<T>;
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
 	dataUrl,
+	tolerance,
 	observerConfig,
 	treeManagerConfig,
+	createScrollItem,
 	loadData,
-	getNextDataChunk
+	getTreeManager
 }: IVirtualScrollProps<T>) => {
+	const [dataManager, error] = useDataManager(dataUrl, treeManagerConfig, loadData, getTreeManager);
 	const [renderData, setRenderData] = useState<T[]>([]);
-	const getNextDataChunkRef = useRef<TreeManagerType<T> | undefined>(undefined);
-	const elementRef = useRef<HTMLDivElement>(null);
+	const [elements, setElements] = useState<IScrollElementResult[]>([]);
+	const [maxBottomOffset, setMaxBottomOffset] = useState(0);
+	const [topOffset, setTopOffset] = useState(0);
+	const [bottomOffset, setBottomOffset] = useState(0);
+	const [areaBottomPadding, setAreaBottomPadding] = useState(0);
 
-	const updateData = useActualCallback((direction: treeActionType, isIntersecting: boolean) => {
-		if (getNextDataChunkRef.current && isIntersecting) {
-			const dataToRender = getNextDataChunkRef.current.getNextChunk(direction);
+	const moveDown = (from = 0, to = elements.length) => {
+		if (!elements.length) {
+			return;
+		}
+
+		const newElements = elements.slice(to, elements.length);
+		const lastHeight = bottomOffset === 0 ? 0 : Math.ceil(elements[elements.length - 1].ref?.current?.getBoundingClientRect().height || 0);
+		let nextTransform = bottomOffset + lastHeight || 0;
+		for (let i = from; i < to; i++) {
+			const currentRef = elements[i]?.ref?.current;
+			const transformY = currentRef ? nextTransform : 0;
+
+			nextTransform = nextTransform + Math.ceil(currentRef?.getBoundingClientRect().height || 0);
+			newElements.push({ ...elements[i], transformY });
+		}
+
+		const _bottom = newElements[newElements.length - 1].transformY || 0;
+		setTopOffset(newElements[0].transformY || 0);
+		setBottomOffset(_bottom);
+		setElements(newElements);
+
+		if (_bottom > maxBottomOffset) {
+			setMaxBottomOffset(_bottom);
+		}
+	};
+
+	const moveUp = () => {
+		if (!elements.length) {
+			return;
+		}
+
+		if (topOffset === 0) {
+			return;
+		}
+
+		const newElements = elements.slice(0, elements.length - tolerance);
+		let transformY = elements[0].transformY || 0;
+		for (let i = elements.length - 1; i >= elements.length - tolerance; i--) {
+			transformY = Math.max(0, transformY - Math.ceil(elements[i].ref?.current?.getBoundingClientRect().height || 0));
+			newElements.unshift({ ...elements[i], transformY });
+		}
+
+		const bottom = newElements[newElements.length - 1].transformY || 0;
+		setTopOffset(newElements[0].transformY || 0);
+		setBottomOffset(bottom);
+		setElements(newElements);
+
+		setAreaBottomPadding(maxBottomOffset - (maxBottomOffset - (maxBottomOffset - bottom)));
+	};
+
+	const update = () => {
+		if (!elements.length) {
+			return;
+		}
+
+		const newElements = [];
+		let transformY = topOffset;
+		for (let i = 0; i < elements.length; i++) {
+			const currentRef = elements[i]?.ref?.current;
+			newElements.push({ ...elements[i], transformY });
+			transformY = transformY + Math.ceil(currentRef?.getBoundingClientRect().height || 0);
+		}
+
+		const _bottom = newElements[newElements.length - 1].transformY || 0;
+		setTopOffset(newElements[0].transformY || 0);
+		setBottomOffset(_bottom);
+		setElements(newElements);
+	};
+
+	const updateData = useActualCallback((action: treeActionType) => {
+		if (dataManager) {
+			const dataToRender = dataManager.getNextChunk(action);
+			console.log("new data", dataToRender);
 			setRenderData(dataToRender);
+			if (action === "down") {
+				moveDown(0, tolerance);
+			}
+			if (action === "up") {
+				moveUp();
+			}
+			if (action === "update") {
+				update();
+			}
 		}
 	});
 
-	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => updateData("up", entry.isIntersecting);
-	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) => updateData("down", entry.isIntersecting);
+	const toggleHide = useCallback((i: number) => {
+		console.log(i);
+		if (dataManager && dataManager.toggleHide(i)) {
+			updateData("update");
+		}
+	}, [dataManager]);
 
-	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, !!getNextDataChunkRef.current);
+	const onIntersection = useActualCallback((direction: treeActionType, isIntersecting: boolean) => {
+		if (isIntersecting && elements.length) {
+			updateData(direction);
+		}
+	});
+
+	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => onIntersection("up", entry.isIntersecting);
+	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) => onIntersection("down", entry.isIntersecting);
+	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, !!dataManager);
 
 	useEffect(() => {
-		loadData(dataUrl)
-			.then((data) => {
-				if (getNextDataChunkRef.current || renderData.length) {
-					return;
-				}
-				getNextDataChunkRef.current = getNextDataChunk(data, treeManagerConfig);
-				setRenderData(getNextDataChunkRef.current?.getNextChunk("update"));
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	}, []);
-
-	const startIndex = renderData[0]?.index || 0;
-	const toggleHidden = useCallback((i: number) => {
-		if (getNextDataChunkRef.current) {
-			const result = getNextDataChunkRef.current.toggleHide(i);
-			if (result) {
-				const dataToRender = getNextDataChunkRef.current?.getNextChunk("update");
-				setRenderData(dataToRender);
-			}
+		const result = dataManager?.getNextChunk("update");
+		if (result) {
+			const _elements = result.map((data, index) => ({ ...createScrollItem({ data, index, toggleHide }), transformY: elements[index]?.transformY }));
+			setRenderData(result);
+			setElements(_elements);
 		}
-	}, []);
+	}, [dataManager]);
+
+	// TODO: можно избавиться
+	useEffect(() => {
+		moveDown();
+	}, [elements.length]);
+
+	if (error) {
+		return (
+			<div>
+				{error}
+			</div>
+		);
+	}
 
 	console.log(renderData);
-	const height = useMemo(() => elementRef.current?.getBoundingClientRect().height || 0, [!!elementRef.current]);
 	return (
-		<ScrollArea style={{paddingTop: `${startIndex * height}px`}}>
+		<ScrollArea style={{paddingTop: `${topOffset}px`, paddingBottom: `${areaBottomPadding}px`}}>
+			{elements.map((element, index) => element.render({
+				data: renderData[index],
+				index,
+				transformY: element.transformY,
+				toggleHide
+			}))}
 			<IntersectionObserverElement
 				key={TOP_OBSERVER_ELEMENT_ID}
 				ref={topObsElement}
+				style={{transform: `translateY(${topOffset}px)`}}
 			/>
-			{renderData.map((data, index) => (
-				<div
-					className={"tree-element"}
-					key={index}
-					ref={index === 0 ? elementRef : null}
-					style={{ transform: `translate(${(data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px, ${index * height}px)` }}
-					onClick={() => toggleHidden(data.index || index)}
-				>
-					{`${data.label} ${data.hiddenChildren ? "(h)" : ""}`}
-				</div>
-			))}
 			<IntersectionObserverElement
 				key={BOTTOM_OBSERVER_ELEMENT_ID}
 				ref={bottomObsElement}
-				style={{transform: `translateY(${(renderData.length - 1) * height}px)`}}
+				style={{transform: `translateY(${bottomOffset}px)`}}
 			/>
 		</ScrollArea>
 	);

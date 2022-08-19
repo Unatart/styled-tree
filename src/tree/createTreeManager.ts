@@ -82,7 +82,7 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		const result = chunk.filter((element) => element.index !== undefined && element.index >= from && element.index <= prevEnd);
 		let end = to;
 		let hidden_level: number | undefined = undefined;
-		while (i < end) {
+		while (i < end && result.length < config.pageSize) {
 			if (treeTraverseArray[i] === undefined) {
 				const addedPointer = traverseNext(i);
 				if (addedPointer === undefined) {
@@ -126,7 +126,7 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		const result = chunk.filter((element) => element.index !== undefined && element.index >= startIndex && element.index < to);
 		let start = from;
 		let i = startIndex - 1;
-		while ( i >= Math.max(start, 0) ) {
+		while (i >= Math.max(start, 0) && result.length < config.pageSize) {
 			let child: IConnectedTreeItem | undefined = treeTraverseArray[i];
 			let firstParentWithHiddenChild: IConnectedTreeItem | undefined;
 			while (child) {

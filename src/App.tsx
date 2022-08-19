@@ -1,7 +1,7 @@
 import React from "react";
 import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
 import {loadTreeData} from "./request/loadTreeData";
-import {TreeElementWithRef} from "./tree/tree_element/TreeElement";
+import {createTreeElement} from "./tree/tree_element/createTreeElement";
 import {createTreeManager} from "./tree/createTreeManager";
 import {
 	BASE_PAGE_SIZE,
@@ -24,9 +24,10 @@ function App() {
 	return (
 		<>
 			<VirtualScroll<IConnectedTreeItem>
-				getNextDataChunk={createTreeManager}
+				tolerance={BASE_TOLERANCE}
+				getTreeManager={createTreeManager}
 				loadData={loadTreeData}
-				ScrollItem={TreeElementWithRef}
+				createScrollItem={createTreeElement}
 				dataUrl={BASE_TREE_LINK}
 				observerConfig={{ threshold: 0.25 }}
 				treeManagerConfig={{ pageSize: BASE_PAGE_SIZE, tolerance: BASE_TOLERANCE }}
