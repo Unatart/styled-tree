@@ -1,6 +1,6 @@
 import {useCallback, useRef} from "react";
 
-export const useActualCallback = <T extends unknown[], R>(callback: (...args: T)=> R) => {
+export const useActualCallback = <T extends unknown[], R>(callback: (...args: T) => R) => {
 	const callback_ref = useRef(callback);
 	callback_ref.current = callback;
 

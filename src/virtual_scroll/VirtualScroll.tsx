@@ -18,9 +18,9 @@ interface IVirtualScrollProps<T> {
 	tolerance: number;
 	observerConfig: IntersectionObserverInit;
 	treeManagerConfig: ITreeManagerConfig;
-	createScrollItem: (props: ITreeElementProps)=> IScrollElementResult;
-	loadData: (url: string)=> Promise<T[]>;
-	createTreeManager: (tree: T[], config: ITreeManagerConfig)=> TreeManagerType<T>;
+	createScrollItem: (props: ITreeElementProps) => IScrollElementResult;
+	loadData: (url: string) => Promise<T[]>;
+	createTreeManager: (tree: T[], config: ITreeManagerConfig) => TreeManagerType<T>;
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
@@ -113,14 +113,15 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		if (dataManager && isIntersecting && elements.length) {
 			const dataToRender = dataManager.getNextChunk(action);
 			setRenderData(dataToRender);
-			if (action === "down") {
-				moveDown(0, tolerance);
-			}
-			if (action === "up") {
-				moveUp();
-			}
-			if (action === "update") {
-				update();
+			switch (action) {
+				case "up":
+					moveUp();
+					break;
+				case "down":
+					moveDown(0, tolerance);
+					break;
+				case "update":
+					update();
 			}
 		}
 	});

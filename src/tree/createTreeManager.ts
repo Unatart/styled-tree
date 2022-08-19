@@ -8,8 +8,8 @@ export interface ITreeManagerConfig {
 }
 
 export type TreeManagerType<T> = {
-	getNextChunk: (action: treeActionType)=> T[];
-	toggleHide: (index: number)=> boolean;
+	getNextChunk: (action: treeActionType) => T[];
+	toggleHide: (index: number) => boolean;
 }
 
 

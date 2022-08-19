@@ -8,7 +8,7 @@ export interface ITreeElementProps {
 	data: IConnectedTreeItem;
 	index: number;
 	style?: CSSProperties;
-	toggleHide: (index: number)=> void;
+	toggleHide: (index: number) => void;
 }
 
 export const createTreeElement = (): IScrollElementResult => {
