@@ -1,5 +1,5 @@
 import {IConnectedTreeItem} from "../ITree";
-import {createRef} from "react";
+import {createRef, CSSProperties} from "react";
 import {TREE_ELEMENT_X_OFFSET_PX} from "../../constants";
 import {IScrollElementResult} from "../../virtual_scroll/IVirtualScroll";
 import "./TreeElement.css";
@@ -7,7 +7,7 @@ import "./TreeElement.css";
 export interface ITreeElementProps {
 	data: IConnectedTreeItem;
 	index: number;
-	transformY?: number;
+	style?: CSSProperties;
 	toggleHide: (index: number)=> void;
 }
 
@@ -16,13 +16,13 @@ export const createTreeElement = (): IScrollElementResult => {
 
 	const render = (props: ITreeElementProps) => (
 		<div
-			className={"tree-element"}
 			key={props.index}
+			className={"tree-element"}
+			style={{ paddingLeft: `${(props.data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...props.style }}
 			ref={ref}
-			style={{ transform: `translate(${(props.data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px, ${props.transformY || 0}px)` }}
-			onClick={() => props.toggleHide(props.data.index || props.index)}
 		>
-			{props.data.label}
+			<div onClick={() => props.toggleHide(props.data.index || props.index)} />
+			<div>{props.data.label}</div>
 		</div>
 	);
 

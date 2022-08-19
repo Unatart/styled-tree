@@ -20,7 +20,7 @@ interface IVirtualScrollProps<T> {
 	treeManagerConfig: ITreeManagerConfig;
 	createScrollItem: (props: ITreeElementProps)=> IScrollElementResult;
 	loadData: (url: string)=> Promise<T[]>;
-	getTreeManager: (tree: T[], config: ITreeManagerConfig)=> TreeManagerType<T>;
+	createTreeManager: (tree: T[], config: ITreeManagerConfig)=> TreeManagerType<T>;
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
@@ -30,9 +30,9 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	treeManagerConfig,
 	createScrollItem,
 	loadData,
-	getTreeManager
+	createTreeManager
 }: IVirtualScrollProps<T>) => {
-	const [dataManager, error] = useDataManager(dataUrl, treeManagerConfig, loadData, getTreeManager);
+	const [dataManager, error] = useDataManager(dataUrl, treeManagerConfig, loadData, createTreeManager);
 	const [renderData, setRenderData] = useState<T[]>([]);
 	const [elements, setElements] = useState<IScrollElementResult[]>([]);
 	const [maxBottomOffset, setMaxBottomOffset] = useState(0);
@@ -109,10 +109,9 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		setElements(newElements);
 	};
 
-	const updateData = useActualCallback((action: treeActionType) => {
-		if (dataManager) {
+	const updateData = useActualCallback((action: treeActionType, isIntersecting: boolean) => {
+		if (dataManager && isIntersecting && elements.length) {
 			const dataToRender = dataManager.getNextChunk(action);
-			console.log("new data", dataToRender);
 			setRenderData(dataToRender);
 			if (action === "down") {
 				moveDown(0, tolerance);
@@ -126,21 +125,9 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		}
 	});
 
-	const toggleHide = useCallback((i: number) => {
-		console.log(i);
-		if (dataManager && dataManager.toggleHide(i)) {
-			updateData("update");
-		}
-	}, [dataManager]);
-
-	const onIntersection = useActualCallback((direction: treeActionType, isIntersecting: boolean) => {
-		if (isIntersecting && elements.length) {
-			updateData(direction);
-		}
-	});
-
-	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => onIntersection("up", entry.isIntersecting);
-	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) => onIntersection("down", entry.isIntersecting);
+	const toggleHide = useCallback((i: number) => dataManager && dataManager.toggleHide(i) ? updateData("update", true) : void 0, [dataManager]);
+	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => updateData("up", entry.isIntersecting);
+	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) => updateData("down", entry.isIntersecting);
 	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, !!dataManager);
 
 	useEffect(() => {
@@ -152,7 +139,6 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		}
 	}, [dataManager]);
 
-	// TODO: можно избавиться
 	useEffect(() => {
 		moveDown();
 	}, [elements.length]);
@@ -165,13 +151,12 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		);
 	}
 
-	console.log(renderData);
 	return (
 		<ScrollArea style={{paddingTop: `${topOffset}px`, paddingBottom: `${areaBottomPadding}px`}}>
 			{elements.map((element, index) => element.render({
 				data: renderData[index],
 				index,
-				transformY: element.transformY,
+				style: {transform: `translateY(${element.transformY}px)`},
 				toggleHide
 			}))}
 			<IntersectionObserverElement

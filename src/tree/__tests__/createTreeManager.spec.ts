@@ -240,7 +240,7 @@ describe("createTreeManager", () => {
 				expect(snapshotUp1[snapshotUp1.length - 1].index).toEqual(8);
 				const snapshotUp2 = treeManager.getNextChunk("up");
 				expect(snapshotUp2[0].index).toEqual(0);
-				expect(snapshotUp2[snapshotUp2.length - 1].index).toEqual(6);
+				expect(snapshotUp2[snapshotUp2.length - 1].index).toEqual(7);
 			});
 		});
 

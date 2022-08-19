@@ -73,7 +73,12 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		}
 
 		if (action === "up") {
-			chunkLimits = [Math.max(0, from - config.tolerance), Math.max(config.pageSize, to - config.tolerance)];
+			const nextFrom = from - config.tolerance;
+			if (nextFrom >= 0) {
+				chunkLimits = [nextFrom, Math.max(config.pageSize, to - config.tolerance)];
+			} else {
+				chunkLimits = [Math.max(0, nextFrom), to];
+			}
 		}
 		return prevLimits;
 	};
@@ -111,22 +116,15 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		chunk = result;
 		const lastElement = result[result.length - 1].index;
 		chunkLimits[1] = lastElement ?  lastElement + 1 : end - 1;
-		if (result.length >= config.pageSize) {
-			return result;
-		}
-		if (result[0].index === from && lastElement && lastElement >= end) {
-			return result;
-		}
-		if (stackContext.length === 0 && result[0].index === 0) {
-			return result;
-		}
+
+		return result;
 	};
 
 	const goUp = (from: number, to: number, startIndex: number) => {
-		const result = chunk.filter((element) => element.index !== undefined && element.index >= startIndex && element.index < to);
+		let result = chunk.filter((element) => element.index !== undefined && element.index >= startIndex && element.index < to);
 		let start = from;
 		let i = startIndex - 1;
-		while (i >= Math.max(start, 0) && result.length < config.pageSize) {
+		while (i >= Math.max(start, 0)) {
 			let child: IConnectedTreeItem | undefined = treeTraverseArray[i];
 			let firstParentWithHiddenChild: IConnectedTreeItem | undefined;
 			while (child) {
@@ -144,6 +142,10 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 			}
 		}
 
+		if (result.length > config.pageSize) {
+			result = result.slice(0, config.pageSize);
+		}
+
 		chunk = result;
 		chunkLimits = [Math.max(start, 0), to];
 		return result;
@@ -155,18 +157,30 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		let from = chunkLimits[0];
 		let to = chunkLimits[1];
 
-		if (action !== "up") {
-			const result = goDown(from, to, prevStart, prevEnd, action === "update" ? from : prevEnd);
-			if (result && result.length) {
-				return result;
-			}
+		if (prevStart === from && prevEnd === to && chunk.length) {
+			return chunk;
+		}
+		
+		const result = action === "up"
+			? goUp(from, to, prevStart)
+			: goDown(from, to, prevStart, prevEnd, action === "update" ? from : prevEnd);
 
-			from = chunkLimits[1] - config.tolerance;
-			to = chunkLimits[1];
-			return goUp(from, to, to);
+		const lastElement = result[result.length - 1].index;
+		if ((result.length >= config.pageSize) ||
+			(result[0].index === from && lastElement && lastElement >= to) ||
+			(stackContext.length === 0 && result[0].index === 0)) {
+			return result;
 		}
 
-		return goUp(from, to, prevStart);
+		if (action === "up") {
+			from = chunkLimits[0];
+			to = chunkLimits[1] + (config.pageSize - result.length);
+			return goDown(from, to, chunkLimits[0], chunkLimits[1], chunkLimits[1]);
+		}
+
+		from = chunkLimits[1] - config.tolerance;
+		to = chunkLimits[1];
+		return goUp(from, to, to);
 	};
 
 	return {

@@ -19,13 +19,12 @@ import {IConnectedTreeItem} from "./tree/ITree";
  * - отображение размера элементов (по количеству детей, без учета всех внуков, правнуков и т.д.)
  * - возможность загрузки своего списка в формате json (добавить инструкцию в каком виде) + дать список примеров
  */
-
 function App() {
 	return (
 		<>
 			<VirtualScroll<IConnectedTreeItem>
 				tolerance={BASE_TOLERANCE}
-				getTreeManager={createTreeManager}
+				createTreeManager={createTreeManager}
 				loadData={loadTreeData}
 				createScrollItem={createTreeElement}
 				dataUrl={BASE_TREE_LINK}
