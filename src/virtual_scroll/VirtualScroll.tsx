@@ -103,7 +103,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 			transformY = transformY + Math.ceil(currentRef?.getBoundingClientRect().height || 0);
 		}
 
-		const _bottom = newElements[newElements.length - 1].transformY || 0;
+		const _bottom = newElements[newElements.length - tolerance].transformY || 0;
 		setTopOffset(newElements[0].transformY || 0);
 		setBottomOffset(_bottom);
 		setElements(newElements);
@@ -112,6 +112,12 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	const updateData = useActualCallback((action: treeActionType, isIntersecting: boolean) => {
 		if (dataManager && isIntersecting && elements.length) {
 			const dataToRender = dataManager.getNextChunk(action);
+			if (
+				dataToRender[dataToRender.length - 1].index === renderData[renderData.length - 1].index &&
+				dataToRender[0].index === renderData[0].index
+			) {
+				return;
+			}
 			setRenderData(dataToRender);
 			switch (action) {
 				case "up":
@@ -132,7 +138,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, !!dataManager);
 
 	useEffect(() => {
-		const result = dataManager?.getNextChunk("update");
+		const result = dataManager?.getNextChunk("update"); // ???
 		if (result) {
 			const _elements = result.map((data, index) => ({ ...createScrollItem({ data, index, toggleHide }), transformY: elements[index]?.transformY }));
 			setRenderData(result);
@@ -153,7 +159,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	}
 
 	return (
-		<ScrollArea style={{paddingTop: `${topOffset}px`, paddingBottom: `${areaBottomPadding}px`}}>
+		<ScrollArea style={{paddingTop: `${topOffset}px`, paddingBottom: `${Math.max(0, areaBottomPadding - topOffset)}px`}}>
 			{elements.map((element, index) => element.render({
 				data: renderData[index],
 				index,

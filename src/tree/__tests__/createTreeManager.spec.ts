@@ -232,15 +232,15 @@ describe("createTreeManager", () => {
 				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 2 });
 				treeManager.getNextChunk("update");
 				treeManager.toggleHide(1);
-				treeManager.getNextChunk("update");
-				treeManager.getNextChunk("down");
+				const snapshotUpdate = treeManager.getNextChunk("update");
+				const snapshotDown1 = treeManager.getNextChunk("down");
 				treeManager.getNextChunk("down");
 				const snapshotUp1 = treeManager.getNextChunk("up");
-				expect(snapshotUp1[0].index).toEqual(1);
-				expect(snapshotUp1[snapshotUp1.length - 1].index).toEqual(8);
+				expect(snapshotUp1[0].index).toEqual(snapshotDown1[0].index);
+				expect(snapshotUp1[snapshotUp1.length - 1].index).toEqual(snapshotDown1[snapshotDown1.length - 1].index);
 				const snapshotUp2 = treeManager.getNextChunk("up");
-				expect(snapshotUp2[0].index).toEqual(0);
-				expect(snapshotUp2[snapshotUp2.length - 1].index).toEqual(7);
+				expect(snapshotUp2[0].index).toEqual(snapshotUpdate[0].index);
+				expect(snapshotUp2[snapshotUp2.length - 1].index).toEqual(snapshotUpdate[snapshotUpdate.length - 1].index);
 			});
 		});
 

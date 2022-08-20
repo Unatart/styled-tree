@@ -17,12 +17,12 @@ export const createTreeElement = (): IScrollElementResult => {
 	const render = (props: ITreeElementProps) => (
 		<div
 			key={props.index}
-			className={"tree-element"}
+			className={"element"}
 			style={{ paddingLeft: `${(props.data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...props.style }}
 			ref={ref}
 		>
-			<div onClick={() => props.toggleHide(props.data.index || props.index)} />
-			<div>{props.data.label}</div>
+			<div className={"element-button"} onClick={() => props.toggleHide(props.data.index || props.index)} > {props.data.children.length ? (props.data.hiddenChildren ? "+" : "-") : ""} </div>
+			<div className={"element-label"}>{props.data.label}</div>
 		</div>
 	);
 

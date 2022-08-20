@@ -60,12 +60,13 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 
 		let from = chunkLimits[0];
 		if (action === "down") {
+			const newFrom = chunk[prevLimits[0] + config.tolerance]?.index || from + config.tolerance;
 			if (to + config.tolerance > treeTraverseArray.length - 1 && stackContext.length === 0) {
 				from -= (to - treeTraverseArray.length);
 				to = treeTraverseArray.length;
 			} else {
-				from += config.tolerance;
-				to += config.tolerance;
+				from = newFrom;
+				to = Math.max(newFrom + config.tolerance, to + config.tolerance);
 			}
 
 			chunkLimits = [from, to];
@@ -73,9 +74,10 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		}
 
 		if (action === "up") {
-			const nextFrom = from - config.tolerance;
+			const nextTo = chunk[chunkLimits[1] - config.tolerance]?.index || Math.max(config.pageSize, to - config.tolerance);
+			const nextFrom = from - config.tolerance || nextTo - config.pageSize;
 			if (nextFrom >= 0) {
-				chunkLimits = [nextFrom, Math.max(config.pageSize, to - config.tolerance)];
+				chunkLimits = [nextFrom, nextTo];
 			} else {
 				chunkLimits = [Math.max(0, nextFrom), to];
 			}
@@ -169,6 +171,7 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		if ((result.length >= config.pageSize) ||
 			(result[0].index === from && lastElement && lastElement >= to) ||
 			(stackContext.length === 0 && result[0].index === 0)) {
+			chunkLimits[0] = result[0].index || chunkLimits[0];
 			return result;
 		}
 
@@ -178,9 +181,9 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 			return goDown(from, to, chunkLimits[0], chunkLimits[1], chunkLimits[1]);
 		}
 
-		from = chunkLimits[1] - config.tolerance;
+		from = chunkLimits[0] - (config.pageSize - result.length);
 		to = chunkLimits[1];
-		return goUp(from, to, to);
+		return goUp(from, to, chunkLimits[0]);
 	};
 
 	return {
