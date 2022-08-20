@@ -1,4 +1,21 @@
-.virtual-scroll {
+.virtual-scroll-container {
+    flex-grow: 2;
+    flex-basis: 50vw;
+    flex-shrink: 1;
+    transition: flex-shrink 1s, flex-grow 1s;
     position: relative;
-    min-height: 100vh;
 }
+
+.virtual-scroll {
+    overflow-y: scroll;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+
+[aria-hidden="true"] { display: none; }
+[aria-hidden="false"] { display: block; }

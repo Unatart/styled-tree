@@ -1,20 +1,20 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useState} from "react";
 import "./VirtualScroll.css";
-import {ScrollArea} from "./ScrollArea";
+import {ScrollArea} from "./scroll-area/ScrollArea";
 import {useActualCallback} from "../hooks/useActualCallback";
 import {ITreeManagerConfig, treeActionType, TreeManagerType} from "../tree/createTreeManager";
 import {IConnectedTreeItem} from "../tree/ITree";
-import {useIntersectionObserver} from "../IntersectionObserver/useIntersectionObserver";
-import {IntersectionObserverElement} from "../IntersectionObserver/IntersectionObserverElement";
+import {useIntersectionObserver} from "../intersection_observer/useIntersectionObserver";
+import {IntersectionObserverElement} from "../intersection_observer/IntersectionObserverElement";
 import {ITreeElementProps} from "../tree/tree_element/createTreeElement";
 import {useDataManager} from "../hooks/useDataManager";
 import {IScrollElementResult} from "./IVirtualScroll";
+import {VisualContext} from "../App";
 
 const TOP_OBSERVER_ELEMENT_ID = "top-observer-element-id";
 const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
 
 interface IVirtualScrollProps<T> {
-	dataUrl: string;
 	tolerance: number;
 	observerConfig: IntersectionObserverInit;
 	treeManagerConfig: ITreeManagerConfig;
@@ -24,7 +24,6 @@ interface IVirtualScrollProps<T> {
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
-	dataUrl,
 	tolerance,
 	observerConfig,
 	treeManagerConfig,
@@ -32,7 +31,9 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	loadData,
 	createTreeManager
 }: IVirtualScrollProps<T>) => {
-	const [dataManager, error] = useDataManager(dataUrl, treeManagerConfig, loadData, createTreeManager);
+	const context = useContext(VisualContext);
+
+	const [dataManager, error] = useDataManager(context.dataUrl, treeManagerConfig, loadData, createTreeManager);
 	const [renderData, setRenderData] = useState<T[]>([]);
 	const [elements, setElements] = useState<IScrollElementResult[]>([]);
 	const [maxBottomOffset, setMaxBottomOffset] = useState(0);
@@ -159,24 +160,30 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	}
 
 	return (
-		<ScrollArea style={{paddingTop: `${topOffset}px`, paddingBottom: `${Math.max(0, areaBottomPadding - topOffset)}px`}}>
-			{elements.map((element, index) => element.render({
-				data: renderData[index],
-				index,
-				style: {transform: `translateY(${element.transformY}px)`},
-				toggleHide
-			}))}
-			<IntersectionObserverElement
-				key={TOP_OBSERVER_ELEMENT_ID}
-				ref={topObsElement}
-				style={{transform: `translateY(${topOffset}px)`}}
-			/>
-			<IntersectionObserverElement
-				key={BOTTOM_OBSERVER_ELEMENT_ID}
-				ref={bottomObsElement}
-				style={{transform: `translateY(${bottomOffset}px)`}}
-			/>
-		</ScrollArea>
+		<div className={"virtual-scroll-container"}>
+			<div className={"virtual-scroll"}>
+				<ScrollArea style={{ paddingTop: `${topOffset}px`, paddingBottom: `${Math.max(0, areaBottomPadding - topOffset)}px` }}>
+					{elements.map((element, index) => element.render({
+						data: renderData[index],
+						index,
+						transformStyle: { transform: `translateY(${element.transformY}px)`},
+						styles: context.itemStyles,
+						iconStyle: context.iconStyle,
+						toggleHide
+					}))}
+					<IntersectionObserverElement
+						key={TOP_OBSERVER_ELEMENT_ID}
+						ref={topObsElement}
+						style={{transform: `translateY(${topOffset}px)`}}
+					/>
+					<IntersectionObserverElement
+						key={BOTTOM_OBSERVER_ELEMENT_ID}
+						ref={bottomObsElement}
+						style={{transform: `translateY(${bottomOffset}px)`}}
+					/>
+				</ScrollArea>
+			</div>
+		</div>
 	);
 };
 

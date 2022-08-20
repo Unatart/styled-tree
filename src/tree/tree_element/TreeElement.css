@@ -1,19 +1,20 @@
 .element {
-    z-index: 1;
+    display: flex;
+    flex-flow: row wrap;
     position: absolute;
     font-family: 'Montserrat', sans-serif;
     font-size: 20pt;
     max-height: 70pt;
     padding-bottom: 10pt;
-    min-height: 40px;
+    align-items: center;
+    width: 100vw;
 }
 
 .element-button {
-    display: inline;
-    width: 50px;
-    height: 50px;
+    display: flex;
+    margin-right: 10px;
+    color: inherit;
 }
 
 .element-label {
-    display: inline;
 }

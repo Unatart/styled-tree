@@ -1,38 +1,40 @@
-import React from "react";
+import React, {CSSProperties, useState} from "react";
 import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
 import {loadTreeData} from "./request/loadTreeData";
 import {createTreeElement} from "./tree/tree_element/createTreeElement";
 import {createTreeManager} from "./tree/createTreeManager";
-import {
-	BASE_PAGE_SIZE,
-	BASE_TOLERANCE,
-	BASE_TREE_LINK
-} from "./constants";
+import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, ICON_VARIATIONS} from "./constants";
 import {IConnectedTreeItem} from "./tree/ITree";
+import {MainScreen} from "./main_screen/MainScreen";
+import {StylingTool} from "./styling_tool/StylingTool";
 
-/**
- * Отдельно пишу TODO по стилям и кастомизации:
- * - с отступами от родителя - без отступов
- * - цветовые темы
- * - иконки разные
- * - collapsed (true/false)
- * - отображение размера элементов (по количеству детей, без учета всех внуков, правнуков и т.д.)
- * - возможность загрузки своего списка в формате json (добавить инструкцию в каком виде) + дать список примеров
- */
+export interface IVisualContext {
+	iconStyle: ICON_VARIATIONS;
+	itemStyles: CSSProperties;
+	dataUrl: string;
+}
+
+const defaultValue = { iconStyle: ICON_VARIATIONS.MINUS_PLUS, itemStyles: {}, dataUrl: BASE_TREE_LINK };
+export const VisualContext = React.createContext<IVisualContext>(defaultValue);
+
 function App() {
+	const [visualContextState, setState] = useState(defaultValue);
+	const updateState = ( state: Partial<IVisualContext> ) => setState({ ...visualContextState, ...state });
+
 	return (
-		<>
-			<VirtualScroll<IConnectedTreeItem>
-				tolerance={BASE_TOLERANCE}
-				createTreeManager={createTreeManager}
-				loadData={loadTreeData}
-				createScrollItem={createTreeElement}
-				dataUrl={BASE_TREE_LINK}
-				observerConfig={{ threshold: 0.25 }}
-				treeManagerConfig={{ pageSize: BASE_PAGE_SIZE, tolerance: BASE_TOLERANCE }}
-			/>
-			{/*<StylingTool/>*/}
-		</>
+		<VisualContext.Provider value={visualContextState}>
+			<MainScreen>
+				<StylingTool updateVisualState={updateState}/>
+				<VirtualScroll<IConnectedTreeItem>
+					tolerance={BASE_TOLERANCE}
+					createTreeManager={createTreeManager}
+					loadData={loadTreeData}
+					createScrollItem={createTreeElement}
+					observerConfig={{ threshold: 0.25 }}
+					treeManagerConfig={{ pageSize: BASE_PAGE_SIZE, tolerance: BASE_TOLERANCE }}
+				/>
+			</MainScreen>
+		</VisualContext.Provider>
 	);
 }
 

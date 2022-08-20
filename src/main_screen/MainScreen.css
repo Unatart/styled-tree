@@ -1,0 +1,10 @@
+.main-screen {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    max-height: 100vh;
+}

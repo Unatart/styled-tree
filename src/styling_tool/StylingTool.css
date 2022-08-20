@@ -1,0 +1,39 @@
+.styling-tool {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 0;
+    left: 0;
+    height: 100vh;
+    background: var(--background-color);
+    box-shadow: 0 0 14px var(--shadow-color);
+    border-left: var(--main);
+    color: var(--main);
+    font-size: 2em;
+    padding-top: 3vh;
+    transition: width 1s;
+    z-index: 2;
+}
+
+
+.open-tool {
+    width: 30vw;
+    padding-right: 1vw;
+}
+
+.open-button {
+    width: 70px;
+    padding-left: 1vw;
+}
+
+.close-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 1vw;
+    transition: padding-left 300ms ease-in-out 300ms
+}
+
+.close-button:hover {
+    padding-left: 25vw;
+}

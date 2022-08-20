@@ -1,0 +1,38 @@
+.drop-button {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    padding: 16px;
+    font-size: 24px;
+    border: none;
+    border-top: var(--border) 2px solid;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 50px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--background-color);
+    box-shadow: 0 8px 16px 0 var(--shadow-color);
+    z-index: 1;
+}
+
+.dropdown-content div {
+    color: var(--font-color);
+    padding: 12px 16px;
+    display: block;
+    font-size: 20px;
+}
+
+.dropdown-content div:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
