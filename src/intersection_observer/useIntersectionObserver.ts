@@ -4,7 +4,7 @@ export const useIntersectionObserver = (
 	onTopCallback: IntersectionObserverCallback,
 	onBottomCallback: IntersectionObserverCallback,
 	config: IntersectionObserverInit,
-	isDataLoaded: boolean,
+	deps: unknown[],
 ): [Ref<HTMLDivElement>, Ref<HTMLDivElement>] => {
 	const topObsElement = useRef(null);
 	const bottomObsElement = useRef(null);
@@ -34,7 +34,7 @@ export const useIntersectionObserver = (
 	useEffect(() => {
 		setTopObserver(new IntersectionObserver(onTopCallback, config));
 		setBottomObserver(new IntersectionObserver(onBottomCallback, config));
-	}, [isDataLoaded]);
+	}, [...deps]);
 
 	return [topObsElement, bottomObsElement];
 };

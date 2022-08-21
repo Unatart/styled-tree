@@ -15,7 +15,7 @@ import {
 } from "react-icons/ti";
 
 export interface ITreeElementProps {
-	data: IConnectedTreeItem;
+	data?: IConnectedTreeItem;
 	index: number;
 	transformStyle?: CSSProperties;
 	styles?: CSSProperties;
@@ -26,32 +26,36 @@ export interface ITreeElementProps {
 export const createTreeElement = (): IScrollElementResult => {
 	const ref = createRef<HTMLDivElement>();
 
-	const render = (props: ITreeElementProps) => {
+	const render = ({ data, index, transformStyle, styles, iconStyle, toggleHide }: ITreeElementProps) => {
 		let icon = null;
 
-		if (props.data.children.length) {
-			switch (props.iconStyle) {
+		if (!data) {
+			return null;
+		}
+
+		if (data.children.length) {
+			switch (iconStyle) {
 				case ICON_VARIATIONS.MINUS_PLUS:
-					icon = props.data.hiddenChildren ? <AiOutlinePlusCircle/> : <AiOutlineMinusCircle/>;
+					icon = data.hiddenChildren ? <AiOutlinePlusCircle/> : <AiOutlineMinusCircle/>;
 					break;
 				case ICON_VARIATIONS.CHEVRON:
-					icon = props.data.hiddenChildren ? <TiChevronRight/> : <TiChevronRightOutline/>;
+					icon = data.hiddenChildren ? <TiChevronRight/> : <TiChevronRightOutline/>;
 					break;
 				case ICON_VARIATIONS.FOLDER:
-					icon = props.data.hiddenChildren ? <AiFillFolder/> : <AiOutlineFolderOpen/>;
+					icon = data.hiddenChildren ? <AiFillFolder/> : <AiOutlineFolderOpen/>;
 					break;
 			}
 		}
 
 		return (
 			<div
-				key={props.index}
+				key={index}
 				className={"element"}
-				style={{marginLeft: `${(props.data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...props.styles, ...props.transformStyle}}
+				style={{marginLeft: `${(data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...styles, ...transformStyle}}
 				ref={ref}
 			>
-				<div key={"button"} className={"element-button"} onClick={() => props.toggleHide(props.data.index || props.index)}>{icon}</div>
-				<div key={"label"} className={"element-label"}>{props.data.label}</div>
+				<div key={"button"} className={"element-button"} onClick={() => toggleHide(data.index || index)}>{icon}</div>
+				<div key={"label"} className={"element-label"}>{data.label}</div>
 			</div>
 		);
 	};

@@ -162,7 +162,7 @@ export const createTreeManager = (tree: ITree, config: ITreeManagerConfig) => {
 		if (prevStart === from && prevEnd === to && chunk.length) {
 			return chunk;
 		}
-		
+
 		const result = action === "up"
 			? goUp(from, to, prevStart)
 			: goDown(from, to, prevStart, prevEnd, action === "update" ? from : prevEnd);

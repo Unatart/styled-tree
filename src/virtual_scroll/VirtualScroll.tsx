@@ -1,6 +1,6 @@
 import {useCallback, useContext, useEffect, useState} from "react";
 import "./VirtualScroll.css";
-import {ScrollArea} from "./scroll-area/ScrollArea";
+import {ScrollArea} from "../scroll-area/ScrollArea";
 import {useActualCallback} from "../hooks/useActualCallback";
 import {treeActionType, TreeManagerType} from "../tree/createTreeManager";
 import {IConnectedTreeItem} from "../tree/ITree";
@@ -29,73 +29,62 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	dataManager
 }: IVirtualScrollProps<T>) => {
 	const context = useContext(VisualContext);
-	const [renderData, setRenderData] = useState<T[]>([]);
-	const [elements, setElements] = useState<IScrollElementResult[]>([]);
+
+	const [itemsData, setItemsData] = useState<T[]>([]);
+	const [elements, setElements] = useState<IScrollElementResult[] | undefined>();
+
 	const [maxBottomOffset, setMaxBottomOffset] = useState(0);
 	const [topOffset, setTopOffset] = useState(0);
 	const [bottomOffset, setBottomOffset] = useState(0);
 	const [areaBottomPadding, setAreaBottomPadding] = useState(0);
+	const [visibility, setVisibility] = useState<"visible" | "hidden">("hidden");
 
-	const moveDown = (from = 0, to = elements.length) => {
-		if (!elements.length) {
-			return;
-		}
-
-		const newElements = elements.slice(to, elements.length);
-		const lastHeight = bottomOffset === 0 ? 0 : Math.ceil(elements[elements.length - 1].ref?.current?.getBoundingClientRect().height || 0);
+	const moveDown = (renderedElements: IScrollElementResult[], from = 0, to = tolerance) => {
+		const newElements = renderedElements.slice(to, renderedElements.length);
+		const lastHeight = bottomOffset === 0 ? 0 : Math.ceil(renderedElements[renderedElements.length - 1].ref?.current?.getBoundingClientRect().height || 0);
 		let nextTransform = bottomOffset + lastHeight || 0;
 		for (let i = from; i < to; i++) {
-			const currentRef = elements[i]?.ref?.current;
+			const currentRef = renderedElements[i]?.ref?.current;
 			const transformY = currentRef ? nextTransform : 0;
 
 			nextTransform = nextTransform + Math.ceil((currentRef?.getBoundingClientRect().height || 0) + verticalMargin);
-			newElements.push({ ...elements[i], transformY });
+			newElements.push({ ...renderedElements[i], transformY });
 		}
 
 		const _bottom = newElements[newElements.length - 1].transformY || 0;
 		setTopOffset(newElements[0].transformY || 0);
 		setBottomOffset(_bottom);
 		setElements(newElements);
-
 		if (_bottom > maxBottomOffset) {
 			setMaxBottomOffset(_bottom);
 		}
 	};
 
-	const moveUp = () => {
-		if (!elements.length) {
-			return;
-		}
-
+	const moveUp = (renderedElements: IScrollElementResult[]) => {
 		if (topOffset === 0) {
 			return;
 		}
 
-		const newElements = elements.slice(0, elements.length - tolerance);
-		let transformY = elements[0].transformY || 0;
-		for (let i = elements.length - 1; i >= elements.length - tolerance; i--) {
-			transformY = Math.max(0, transformY - Math.ceil((elements[i].ref?.current?.getBoundingClientRect().height || 0) + verticalMargin));
-			newElements.unshift({ ...elements[i], transformY });
+		const newElements = renderedElements.slice(0, renderedElements.length - tolerance);
+		let transformY = renderedElements[0].transformY || 0;
+		for (let i = renderedElements.length - 1; i >= renderedElements.length - tolerance; i--) {
+			transformY = Math.max(0, transformY - Math.ceil((renderedElements[i].ref?.current?.getBoundingClientRect().height || 0) + verticalMargin));
+			newElements.unshift({ ...renderedElements[i], transformY });
 		}
 
 		const bottom = newElements[newElements.length - 1].transformY || 0;
 		setTopOffset(newElements[0].transformY || 0);
 		setBottomOffset(bottom);
 		setElements(newElements);
-
 		setAreaBottomPadding(maxBottomOffset - (maxBottomOffset - (maxBottomOffset - bottom)));
 	};
 
-	const update = () => {
-		if (!elements.length) {
-			return;
-		}
-
+	const update = (renderedElements: IScrollElementResult[]) => {
 		const newElements = [];
 		let transformY = topOffset;
-		for (let i = 0; i < elements.length; i++) {
-			const currentRef = elements[i]?.ref?.current;
-			newElements.push({ ...elements[i], transformY });
+		for (let i = 0; i < renderedElements.length; i++) {
+			const currentRef = renderedElements[i]?.ref?.current;
+			newElements.push({ ...renderedElements[i], transformY });
 			transformY = transformY + Math.ceil((currentRef?.getBoundingClientRect().height || 0) + verticalMargin);
 		}
 
@@ -106,59 +95,62 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	};
 
 	const updateData = useActualCallback((action: treeActionType, isIntersecting: boolean) => {
-		if (dataManager && isIntersecting && elements.length) {
+		if (!elements || elements.length === 0 || itemsData.length === 0 || visibility === "hidden") {
+			return;
+		}
+
+		const height = elements[0]?.ref?.current?.getBoundingClientRect().height;
+		if (isIntersecting && elements.length && height) {
 			const dataToRender = dataManager.getNextChunk(action);
 			if (
-				dataToRender[dataToRender.length - 1].index === renderData[renderData.length - 1].index &&
-				dataToRender[0].index === renderData[0].index
+				dataToRender[dataToRender.length - 1].index === itemsData[itemsData.length - 1].index &&
+				dataToRender[0].index === itemsData[0].index
 			) {
 				return;
 			}
-			setRenderData(dataToRender);
+			setItemsData(dataToRender);
 			switch (action) {
 				case "up":
-					moveUp();
+					moveUp(elements);
 					break;
 				case "down":
-					moveDown(0, tolerance);
+					moveDown(elements);
 					break;
 				case "update":
-					update();
+					update(elements);
 			}
 		}
 	});
 
-	const toggleHide = useCallback((i: number) => dataManager && dataManager.toggleHide(i) ? updateData("update", true) : void 0, [dataManager]);
 	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => updateData("up", entry.isIntersecting);
 	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) => updateData("down", entry.isIntersecting);
-	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, !!dataManager);
+	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, [!!dataManager]);
+
+	const toggleHide = useCallback((i: number) => dataManager.toggleHide(i) ? updateData("update", true) : void 0, []);
 
 	useEffect(() => {
-		const result = dataManager?.getNextChunk("update");
-		if (result) {
-			const _elements = result.map((data, index) => ({ ...createScrollItem({ data, index, toggleHide }), transformY: elements[index]?.transformY }));
-			setRenderData(result);
-			setElements(_elements);
-		}
-	}, [dataManager]);
-
-	useEffect(() => {
-		moveDown();
-	}, [elements.length]);
-
-	useEffect(() => {
-		// TODO: улучшить
-		updateData("update", true);
+		const result = dataManager.getNextChunk("update");
+		const _elements = result.map((data, index) => ({...createScrollItem({data, index, toggleHide})}));
+		setItemsData(result);
+		setElements(_elements);
+		setVisibility("hidden");
 	}, [context.itemStyles]);
+
+	useEffect(() => {
+		if (visibility === "hidden" && elements && elements.length) {
+			update(elements);
+			setVisibility("visible");
+		}
+	}, [elements]);
 
 	return (
 		<div className={"virtual-scroll-container"}>
 			<div className={"virtual-scroll"}>
 				<ScrollArea style={{ paddingTop: `${topOffset}px`, paddingBottom: `${Math.max(0, areaBottomPadding - topOffset)}px` }}>
-					{elements.map((element, index) => element.render({
-						data: renderData[index],
+					{elements?.map((element, index) => element.render({
+						data: itemsData[index],
 						index,
-						transformStyle: { transform: `translateY(${element.transformY}px)`},
+						transformStyle: { transform: `translateY(${element.transformY}px)`, visibility },
 						styles: context.itemStyles,
 						iconStyle: context.iconStyle,
 						toggleHide

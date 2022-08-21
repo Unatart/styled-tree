@@ -24,7 +24,6 @@ export const ItemStyleInput = (props: IStyleActionProps) => {
 				className={"input"}
 				value={style}
 				onChange={handleChange}
-				defaultValue={style}
 			/>
 			<div className={"styling-button"} onClick={onClick}>Submit</div>
 		</div>
