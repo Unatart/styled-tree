@@ -4,17 +4,34 @@
     position: absolute;
     font-family: 'Montserrat', sans-serif;
     font-size: 20pt;
-    max-height: 70pt;
-    padding-bottom: 10pt;
+    min-height: 15px;
+    max-height: 100px;
+    padding: 20px 20px;
     align-items: center;
-    width: 100vw;
+    background-color: #ffffff;
+    border: 1px solid #efefef;
+    border-radius: 10px;
+    box-shadow: rgba(255, 255, 255, 0.1) 0 1px 1px 0 inset, rgba(50, 50, 93, 0.15) 0 50px 100px -20px, rgba(0, 0, 0, 0.2) 0 20px 50px -20px;
 }
 
 .element-button {
     display: flex;
     margin-right: 10px;
     color: inherit;
+    /*padding: 5px 5px;*/
+    /*border-radius: 10px;*/
+    /*background-color: rgba(168, 105, 240, 0.73);*/
+}
+
+.element-button:hover {
+    font-size: 32px;
+    transition: font-size 200ms ease-in;
 }
 
 .element-label {
+    min-width: 20vw;
+    max-width: 50vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

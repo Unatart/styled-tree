@@ -16,6 +16,7 @@ const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
 
 interface IVirtualScrollProps<T> {
 	tolerance: number;
+	verticalMargin: number;
 	observerConfig: IntersectionObserverInit;
 	treeManagerConfig: ITreeManagerConfig;
 	createScrollItem: (props: ITreeElementProps) => IScrollElementResult;
@@ -25,6 +26,7 @@ interface IVirtualScrollProps<T> {
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
 	tolerance,
+	verticalMargin,
 	observerConfig,
 	treeManagerConfig,
 	createScrollItem,
@@ -53,7 +55,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 			const currentRef = elements[i]?.ref?.current;
 			const transformY = currentRef ? nextTransform : 0;
 
-			nextTransform = nextTransform + Math.ceil(currentRef?.getBoundingClientRect().height || 0);
+			nextTransform = nextTransform + Math.ceil((currentRef?.getBoundingClientRect().height || 0) + verticalMargin);
 			newElements.push({ ...elements[i], transformY });
 		}
 
@@ -79,7 +81,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		const newElements = elements.slice(0, elements.length - tolerance);
 		let transformY = elements[0].transformY || 0;
 		for (let i = elements.length - 1; i >= elements.length - tolerance; i--) {
-			transformY = Math.max(0, transformY - Math.ceil(elements[i].ref?.current?.getBoundingClientRect().height || 0));
+			transformY = Math.max(0, transformY - Math.ceil((elements[i].ref?.current?.getBoundingClientRect().height || 0) + verticalMargin));
 			newElements.unshift({ ...elements[i], transformY });
 		}
 
@@ -101,7 +103,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		for (let i = 0; i < elements.length; i++) {
 			const currentRef = elements[i]?.ref?.current;
 			newElements.push({ ...elements[i], transformY });
-			transformY = transformY + Math.ceil(currentRef?.getBoundingClientRect().height || 0);
+			transformY = transformY + Math.ceil((currentRef?.getBoundingClientRect().height || 0) + verticalMargin);
 		}
 
 		const _bottom = newElements[newElements.length - tolerance].transformY || 0;
@@ -139,7 +141,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, !!dataManager);
 
 	useEffect(() => {
-		const result = dataManager?.getNextChunk("update"); // ???
+		const result = dataManager?.getNextChunk("update");
 		if (result) {
 			const _elements = result.map((data, index) => ({ ...createScrollItem({ data, index, toggleHide }), transformY: elements[index]?.transformY }));
 			setRenderData(result);
@@ -150,6 +152,10 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	useEffect(() => {
 		moveDown();
 	}, [elements.length]);
+
+	useEffect(() => {
+		updateData("update", true);
+	}, [context.itemStyles]);
 
 	if (error) {
 		return (

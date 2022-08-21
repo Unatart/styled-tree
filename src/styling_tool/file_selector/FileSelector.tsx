@@ -1,25 +1,37 @@
-import {IVisualContext} from "../../App";
 import "./FileSelector.css";
-import {FC, useEffect, useState} from "react";
+import {ChangeEvent, FC, useEffect, useState} from "react";
+import {IStylingToolProps} from "../IStylingToolProps";
 
-interface IFileSelectorProps {
-    updateVisualState: (state: Partial<IVisualContext>) => void;
-}
-
-export const FileSelector: FC<IFileSelectorProps> = (props) => {
+export const FileSelector: FC<IStylingToolProps> = (props) => {
 	const [reader] = useState(new FileReader());
-	const onChange = (files: FileList | null) => {
-		console.log(files);
+
+	const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+		console.log(event);
+		const files = event.target.files;
 		if (files) {
 			reader.readAsText(files[0]);
 		}
 	};
 
 	useEffect(() => {
-		reader.addEventListener("load", (event) => {
+		const listener = (event: ProgressEvent<FileReader>) => {
 			console.log(event.target?.result);
-		});
+		};
+
+		reader.addEventListener("load", listener);
+
+		return () => {
+			reader.removeEventListener("load", listener);
+		};
 	}, []);
 
-	return <input type="file" id="file-selector" accept={".json"} onChange={(e) => onChange(e.target.files)}/>;
+	return (
+		<div className={"file-selector"}>
+			<div className={"select-file-head"}>Data file:</div>
+			<label className={"custom-file-upload"} htmlFor={"file-input"}>
+				<input id={"file-input"} type={"file"} accept={".json"} onChange={onChange}/>
+				<div>Click me</div>
+			</label>
+		</div>
+	);
 };

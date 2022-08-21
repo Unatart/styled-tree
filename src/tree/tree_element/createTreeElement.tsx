@@ -47,7 +47,7 @@ export const createTreeElement = (): IScrollElementResult => {
 			<div
 				key={props.index}
 				className={"element"}
-				style={{paddingLeft: `${(props.data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...props.styles, ...props.transformStyle}}
+				style={{marginLeft: `${(props.data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...props.styles, ...props.transformStyle}}
 				ref={ref}
 			>
 				<div key={"button"} className={"element-button"} onClick={() => props.toggleHide(props.data.index || props.index)}>{icon}</div>

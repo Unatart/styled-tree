@@ -1,34 +1,32 @@
-import {ChangeEvent, ChangeEventHandler, CSSProperties, KeyboardEventHandler, useState} from "react";
-import {IVisualContext} from "../../App";
+import {ChangeEvent, ChangeEventHandler, CSSProperties, useState} from "react";
 import "./ItemStyleInput.css";
+import {IStylingToolProps} from "../IStylingToolProps";
+import {DEFAULT_INPUT_SCHEME} from "../schemes";
 
-interface IItemStyleInputProps {
-    updateVisualState: (state: Partial<IVisualContext>) => void;
-}
-
-export const ItemStyleInput = (props: IItemStyleInputProps) => {
-	const [style, setStyle] = useState<string>();
+export const ItemStyleInput = (props: IStylingToolProps) => {
+	const [style, setStyle] = useState<string>(JSON.stringify(DEFAULT_INPUT_SCHEME));
 
 	const handleChange: ChangeEventHandler = (event: ChangeEvent<HTMLInputElement>) => {
 		setStyle(event.target.value);
 	};
 
-	const onKeyDown: KeyboardEventHandler = (event) => {
-		if(event.key === "Enter" && style) {
-			const stylesObj: CSSProperties = JSON.parse(style.replace(/&quot;/ig,"\""));
-			props.updateVisualState({ itemStyles: stylesObj });
+	const onClick = () => {
+		if (style) {
+			const stylesObj: CSSProperties = JSON.parse(style.replace(/&quot;/ig, "\""));
+			props.updateVisualState({itemStyles: stylesObj});
 		}
 	};
 
 	return (
 		<div className={"styling-input"}>
-			<div className={"headline"}>Enter value: </div>
+			<div className={"headline"}>Enter item CSS Properties: </div>
 			<textarea
 				className={"input"}
 				value={style}
 				onChange={handleChange}
-				onKeyDown={onKeyDown}
+				defaultValue={style}
 			/>
+			<div className={"styling-button"} onClick={onClick}>Submit</div>
 		</div>
 	);
 };

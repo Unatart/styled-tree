@@ -1,38 +1,54 @@
-.drop-button {
-    font-family: 'Montserrat', sans-serif;
-    background-color: var(--background-color);
-    color: var(--font-color);
-    padding: 16px;
-    font-size: 24px;
-    border: none;
-    border-top: var(--border) 2px solid;
-    width: 100%;
-    cursor: pointer;
-    margin-top: 50px;
-}
-
 .dropdown {
     position: relative;
     display: inline-block;
+    height: 50%;
+}
+
+.drop-button {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--background-color);
+    color: #3f3f3f;
+    font-weight: bold;
+    padding: 16px;
+    font-size: 24px;
+    width: 95%;
+    border: 3px solid #ffbc99;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.drop-button:hover {
+    background-color: #ffbc99;
+    color: #f7f7fc;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: var(--background-color);
-    box-shadow: 0 8px 16px 0 var(--shadow-color);
     z-index: 1;
+    width: 100%;
+    border-radius: 10px;
 }
 
 .dropdown-content div {
-    color: var(--font-color);
+    color: #3f3f3f;
     padding: 12px 16px;
     display: block;
     font-size: 20px;
+    text-align: center;
+    border-radius: 10px;
 }
 
-.dropdown-content div:hover {background-color: #f1f1f1}
+.dropdown-content div:hover {
+    background-color: #ff6a55;
+    color: #f7f7fc;
+}
 
 .dropdown:hover .dropdown-content {
     display: block;
+    background-color: #ffbc99;
+    color: #f7f7fc;
 }

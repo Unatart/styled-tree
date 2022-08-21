@@ -3,7 +3,7 @@ import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
 import {loadTreeData} from "./request/loadTreeData";
 import {createTreeElement} from "./tree/tree_element/createTreeElement";
 import {createTreeManager} from "./tree/createTreeManager";
-import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, ICON_VARIATIONS} from "./constants";
+import {BASE_PAGE_SIZE, BASE_TOLERANCE, BASE_TREE_LINK, BASE_VERTICAL_MARGIN, ICON_VARIATIONS} from "./constants";
 import {IConnectedTreeItem} from "./tree/ITree";
 import {MainScreen} from "./main_screen/MainScreen";
 import {StylingTool} from "./styling_tool/StylingTool";
@@ -27,6 +27,7 @@ function App() {
 				<StylingTool updateVisualState={updateState}/>
 				<VirtualScroll<IConnectedTreeItem>
 					tolerance={BASE_TOLERANCE}
+					verticalMargin={BASE_VERTICAL_MARGIN}
 					createTreeManager={createTreeManager}
 					loadData={loadTreeData}
 					createScrollItem={createTreeElement}

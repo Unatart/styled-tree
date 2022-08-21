@@ -1,12 +1,8 @@
 import "./IconsMenu.css";
 import {ICON_VARIATIONS} from "../../constants";
-import {IVisualContext} from "../../App";
+import {IStylingToolProps} from "../IStylingToolProps";
 
-interface IIconsMenuProps {
-	updateVisualState: (state: Partial<IVisualContext>) => void;
-}
-
-export const IconsMenu = (props: IIconsMenuProps) => {
+export const IconsMenu = (props: IStylingToolProps) => {
 	return (
 		<div className="dropdown">
 			<button className="drop-button">Icon style</button>
@@ -15,7 +11,7 @@ export const IconsMenu = (props: IIconsMenuProps) => {
 					const iconStyle = ICON_VARIATIONS[key as keyof typeof ICON_VARIATIONS];
 					return (
 						<div key={key} onClick={() => props.updateVisualState({ iconStyle })}>
-							{ iconStyle }
+							{ key }
 						</div>
 					);
 				})}
