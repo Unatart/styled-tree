@@ -1,6 +1,5 @@
 .virtual-scroll-container {
     flex-grow: 2;
-    flex-basis: 50vw;
     flex-shrink: 1;
     transition: flex-shrink 1s, flex-grow 1s;
     position: relative;

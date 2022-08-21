@@ -1,6 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
 * {
+    --black-font: #3f3f3f;
+    --light-font: #f7f7fc;
+    --bright-font: #ff6a55;
+    --background: #e8e9eb;
+    --background-focused: #ffbc99;
+    --tool-background: #f7f7fc;
+    --border: 1px solid #cccccc;
+    --peach-border: 3px solid #ffbc99;
+    --font-size: 24px;
+    --font-size-small: 20px;
     padding: 0;
     margin: 0;
 }
@@ -10,5 +20,5 @@ body, html {
     font-size: 15pt;
     height: 100vh;
     overflow: hidden;
-    background-color: #E8E9EB;
+    background-color: var(--background);
 }

@@ -28,14 +28,14 @@ export const StylingTool: FC<IStylingToolActionProps> = (props) => {
 
 	if (status === "closed") {
 		return (
-			<div className={"styling-tool open-button"} onClick={toggleStatus}>
-				<HiOutlineChevronDoubleRight/>
+			<div className={"styling-tool"} onClick={toggleStatus}>
+				<div className={"open-button"}><HiOutlineChevronDoubleRight/></div>
 			</div>
 		);
 	}
 
 	return (
-		<div className={"styling-tool open-tool"}>
+		<div className={"styling-tool"}>
 			<div className={"close-button"} onClick={toggleStatus}>
 				<HiOutlineChevronDoubleLeft/>
 			</div>

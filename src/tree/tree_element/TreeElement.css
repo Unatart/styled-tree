@@ -3,13 +3,13 @@
     flex-flow: row wrap;
     position: absolute;
     font-family: 'Montserrat', sans-serif;
-    font-size: 20pt;
+    font-size: var(--font-size-small);
     min-height: 15px;
     max-height: 100px;
     padding: 20px 20px;
     align-items: center;
-    background-color: #ffffff;
-    border: 1px solid #efefef;
+    background-color: var(--light-font);
+    border: var(--border);
     border-radius: 10px;
     box-shadow: rgba(255, 255, 255, 0.1) 0 1px 1px 0 inset, rgba(50, 50, 93, 0.15) 0 50px 100px -20px, rgba(0, 0, 0, 0.2) 0 20px 50px -20px;
 }
@@ -18,9 +18,6 @@
     display: flex;
     margin-right: 10px;
     color: inherit;
-    /*padding: 5px 5px;*/
-    /*border-radius: 10px;*/
-    /*background-color: rgba(168, 105, 240, 0.73);*/
 }
 
 .element-button:hover {

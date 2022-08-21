@@ -1,17 +1,17 @@
 .variation-block {
     display: flex;
     flex-direction: row;
-    font-size: 24px;
+    font-size: var(--font-size);
     margin: 10px 10px;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: var(--border);
     padding-top: 20px;
-    color: #3f3f3f;
+    color: var(--black-font);
 }
 
 .dropdown {
-    border: 3px solid #ffbc99;
+    border: var(--peach-border);
     border-radius: 10px;
     height: 100%;
     width: 100%;
@@ -24,8 +24,8 @@
 .drop-button {
     font-family: 'Montserrat', sans-serif;
     background-color: inherit;
-    color: #3f3f3f;
-    font-size: 24px;
+    color: var(--black-font);
+    font-size: var(--font-size);
     border-radius: 15px;
     cursor: pointer;
     margin-top: 10px;
@@ -36,8 +36,8 @@
 
 .drop-button:hover {
     font-family: 'Montserrat', sans-serif;
-    color: #3f3f3f;
-    font-size: 24px;
+    color: var(--black-font);
+    font-size: var(--font-size);
     width: 95%;
     cursor: pointer;
     margin-top: 10px;
@@ -59,22 +59,22 @@
 }
 
 .dropdown-content div {
-    color: #3f3f3f;
+    color: var(--black-font);
     padding: 12px 16px;
-    font-size: 20px;
+    font-size: var(--font-size-small);
     text-align: center;
     border-radius: 10px;
     transition: all 200ms ease-in-out;
 }
 
 .dropdown-content div:hover {
-    background-color: #ffbc99;
-    color: #f7f7fc;
+    background-color: var(--background-focused);
+    color: var(--light-font);
 }
 
 .dropdown:hover .dropdown-content {
     display: block;
-    color: #f7f7fc;
+    color: var(--light-font);
 }
 
 .dropdown:hover .drop-button {

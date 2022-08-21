@@ -1,13 +1,13 @@
 .file-selector {
     display: flex;
     flex-direction: row;
-    font-size: 24px;
+    font-size: var(--font-size);
     margin: 10px 10px;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: var(--border);
     padding-top: 20px;
-    color: #3f3f3f;
+    color: var(--black-font);
 }
 
 .select-file-head {
@@ -21,17 +21,17 @@ input[type="file"] {
 }
 
 .custom-file-upload {
-    border: 3px solid #ffbc99;
+    display: inline-block;
+    border: var(--peach-border);
     border-radius: 10px;
     height: 100%;
     width: 100%;
-    display: inline-block;
     cursor: pointer;
     text-align: center;
     transition: color 200ms ease-out, background-color 200ms ease-out;
 }
 
 .custom-file-upload:hover {
-    background-color: #ffbc99;
-    color: #f7f7fc;
+    background-color: var(--background-focused);
+    color: var(--light-font);
 }

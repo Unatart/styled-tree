@@ -3,27 +3,27 @@
     max-height: 50%;
     flex-direction: column;
     justify-content: space-between;
-    font-size: 24px;
-    margin: 10px 10px;
+    font-size: var(--font-size);
     border: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.2);
-    color: #3f3f3f;
+    border-top: var(--border);
+    color: var(--black-font);
+    overflow-y: scroll;
 }
 
 .headline {
-    font-size: 24px;
+    font-size: var(--font-size);
     font-weight: bold;
     margin: 10px 10px;
 }
 
 .styling-input .input {
     font-family: 'Montserrat', sans-serif;
-    font-size: 20px;
-    min-height: 200px;
+    font-size: var(--font-size-small);
+    min-height: 100px;
     resize: vertical;
     margin: 10px 10px;
     padding: 10px 10px;
-    border: 2px solid rgba(0, 0, 0, 0.2);
+    border: var(--border);
     border-radius: 15px;
 }
 
@@ -34,12 +34,12 @@
 
 .styling-button {
     text-align: center;
-    border: 3px solid #ffbc99;
+    border: var(--peach-border);
     border-radius: 15px;
     padding: 6px;
 }
 
 .styling-button:hover {
-    background-color: #ffbc99;
-    color: #f7f7fc;
+    background-color: var(--background-focused);
+    color: var(--light-font);
 }
