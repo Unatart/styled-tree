@@ -11,7 +11,7 @@ import {IConnectedTreeItem} from "../tree/ITree";
 type StylingToolStatus = "open" | "closed";
 
 interface IStylingToolActionProps {
-	updateVisualState: (state: Partial<IVisualContext<IConnectedTreeItem>>) => void;
+	updateVisualState: (state: Partial<IVisualContext>) => void;
 	setData: (data: IConnectedTreeItem[]) => void;
 }
 

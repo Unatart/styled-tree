@@ -21,7 +21,6 @@ export const FileSelector: FC<IFileSelectorProps> = ({ setData }) => {
 			const file = event.target?.result;
 			if (file && typeof file === "string") {
 				const tree: IConnectedTreeItem[] = JSON.parse(file).result;
-				console.log(tree);
 				setData(tree);
 			}
 		};

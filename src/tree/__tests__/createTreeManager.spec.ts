@@ -1,9 +1,9 @@
-import {createTreeManager} from "../createTreeManager";
+import {TreeManager} from "../TreeManager";
 import {genTreeByLevels} from "./genTestExamples";
 
 describe("createTreeManager", () => {
 	it("constructor returns TreeManagerType object", () => {
-		const treeManager = createTreeManager([{ id: "1", label: "Files", children: [] }], { pageSize: 80, tolerance: 40 });
+		const treeManager = new TreeManager([{ id: "1", label: "Files", children: [] }], { pageSize: 80, tolerance: 40 });
 
 		expect(typeof treeManager).toEqual("object");
 		expect(treeManager["getNextChunk"]).not.toEqual(undefined);
@@ -15,7 +15,7 @@ describe("createTreeManager", () => {
 			it("if tree has as much elements as pageSize", () => {
 				const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-				const treeManager = createTreeManager(tree, { pageSize: 120, tolerance: 30 });
+				const treeManager = new TreeManager(tree, { pageSize: 120, tolerance: 30 });
 
 				let elements = treeManager.getNextChunk("update");
 				expect(elements.length).toEqual(120);
@@ -30,7 +30,7 @@ describe("createTreeManager", () => {
 			it("if tree has different amount of elements as pageSize", () => {
 				const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-				const treeManager = createTreeManager(tree, { pageSize: 40, tolerance: 10 });
+				const treeManager = new TreeManager(tree, { pageSize: 40, tolerance: 10 });
 
 				let elements = treeManager.getNextChunk("update");
 				expect(elements.length).toEqual(40);
@@ -46,7 +46,7 @@ describe("createTreeManager", () => {
 		it("set indexes in increasing order", () => {
 			const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-			const treeManager = createTreeManager(tree, { pageSize: 40, tolerance: 40 });
+			const treeManager = new TreeManager(tree, { pageSize: 40, tolerance: 40 });
 
 			let index = 0;
 			let elements = treeManager.getNextChunk("update");
@@ -72,7 +72,7 @@ describe("createTreeManager", () => {
 			it("continues from index = prevStart + tolerance", () => {
 				const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-				const treeManager = createTreeManager(tree, { pageSize: 50, tolerance: 10 });
+				const treeManager = new TreeManager(tree, { pageSize: 50, tolerance: 10 });
 
 				let start = 0;
 				let index = start;
@@ -100,14 +100,14 @@ describe("createTreeManager", () => {
 
 			it("returns max elements from pageSize and (tree.end - from)", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 20, tolerance: 5 });
+				const treeManager = new TreeManager(tree, { pageSize: 20, tolerance: 5 });
 				const result = treeManager.getNextChunk("update");
 				expect(result.length).toEqual(15);
 			});
 
 			it("if predicted end of chunk is bigger than end of tree, gets all elements from (end - pageSize) to (end) of tree", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 7 });
+				const treeManager = new TreeManager(tree, { pageSize: 7, tolerance: 7 });
 				treeManager.getNextChunk("update");
 
 				treeManager.getNextChunk("down");
@@ -122,7 +122,7 @@ describe("createTreeManager", () => {
 		describe("if goes down and then up", () => {
 			it("stops at 0 and gives pageSize amount of elements when scrolling to the very top", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 7 });
+				const treeManager = new TreeManager(tree, { pageSize: 7, tolerance: 7 });
 				treeManager.getNextChunk("update");
 
 				treeManager.getNextChunk("down");
@@ -137,7 +137,7 @@ describe("createTreeManager", () => {
 
 			it("gives right indexes", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 7 });
+				const treeManager = new TreeManager(tree, { pageSize: 7, tolerance: 7 });
 				let index = 0;
 				let result = treeManager.getNextChunk("update");
 				for (let i = 0; i < result.length; i++) {
@@ -179,7 +179,7 @@ describe("createTreeManager", () => {
 		it("toggleHide true if element with given index exist in watched tree and has children", () => {
 			const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-			const treeManager = createTreeManager(tree, { pageSize: 120, tolerance: 30 });
+			const treeManager = new TreeManager(tree, { pageSize: 120, tolerance: 30 });
 			treeManager.getNextChunk("update");
 			treeManager.getNextChunk("down");
 			treeManager.getNextChunk("down");
@@ -192,7 +192,7 @@ describe("createTreeManager", () => {
 		it("toggleHide false if element with given index exist in watched tree but has no children", () => {
 			const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-			const treeManager = createTreeManager(tree, { pageSize: 120, tolerance: 30 });
+			const treeManager = new TreeManager(tree, { pageSize: 120, tolerance: 30 });
 			treeManager.getNextChunk("update");
 			treeManager.getNextChunk("down");
 			treeManager.getNextChunk("down");
@@ -205,7 +205,7 @@ describe("createTreeManager", () => {
 		it("toggleHide false if element with given index not exist in watched tree", () => {
 			const tree = genTreeByLevels([5, 4, 3, 2, 1], 0);
 
-			const treeManager = createTreeManager(tree, { pageSize: 120, tolerance: 30 });
+			const treeManager = new TreeManager(tree, { pageSize: 120, tolerance: 30 });
 			expect(treeManager.toggleHide(50)).toEqual(false);
 		});
 	});
@@ -214,7 +214,7 @@ describe("createTreeManager", () => {
 		describe("- toggleHide closes element", () => {
 			it("element with field hiddenChildren is in result, but his children don't", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 7 });
+				const treeManager = new TreeManager(tree, { pageSize: 7, tolerance: 7 });
 				const beforeResult = treeManager.getNextChunk("update");
 				const firstElementIndex = beforeResult[0].index;
 				const children = beforeResult[1].children;
@@ -229,7 +229,7 @@ describe("createTreeManager", () => {
 
 			it("elements consistent while scrolling down and up after hide", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 2 });
+				const treeManager = new TreeManager(tree, { pageSize: 7, tolerance: 2 });
 				treeManager.getNextChunk("update");
 				treeManager.toggleHide(1);
 				const snapshotUpdate = treeManager.getNextChunk("update");
@@ -247,7 +247,7 @@ describe("createTreeManager", () => {
 		describe("- toggleHide opens element", () => {
 			it("element with field hiddenChildren stays in result, result got all non hidden children on inner levels", () => {
 				const tree = genTreeByLevels([3, 2, 1], 0);
-				const treeManager = createTreeManager(tree, { pageSize: 7, tolerance: 2 });
+				const treeManager = new TreeManager(tree, { pageSize: 7, tolerance: 2 });
 				treeManager.getNextChunk("update");
 				treeManager.toggleHide(1);
 				let result = treeManager.getNextChunk("update");

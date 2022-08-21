@@ -3,4 +3,5 @@
     width: 70%;
     height: 45px;
     margin: 0 auto;
+    z-index: -1;
 }

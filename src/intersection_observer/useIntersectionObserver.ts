@@ -4,7 +4,7 @@ export const useIntersectionObserver = (
 	onTopCallback: IntersectionObserverCallback,
 	onBottomCallback: IntersectionObserverCallback,
 	config: IntersectionObserverInit,
-	deps: unknown[],
+	isReady: boolean,
 ): [Ref<HTMLDivElement>, Ref<HTMLDivElement>] => {
 	const topObsElement = useRef(null);
 	const bottomObsElement = useRef(null);
@@ -29,12 +29,14 @@ export const useIntersectionObserver = (
 				bottomObserver.unobserve(bottomObsElement.current);
 			}
 		};
-	}, [topObsElement.current, bottomObsElement.current]);
+	}, [topObsElement.current, bottomObsElement.current, topObserver, bottomObserver]);
     
 	useEffect(() => {
-		setTopObserver(new IntersectionObserver(onTopCallback, config));
-		setBottomObserver(new IntersectionObserver(onBottomCallback, config));
-	}, [...deps]);
+		if (isReady) {
+			setTopObserver(new IntersectionObserver(onTopCallback, config));
+			setBottomObserver(new IntersectionObserver(onBottomCallback, config));
+		}
+	}, [isReady]);
 
 	return [topObsElement, bottomObsElement];
 };
