@@ -1,4 +1,5 @@
 {
+  "homepage": "https://Unatart.github.io/styled-tree",
   "name": "styled-tree-project",
   "version": "0.1.0",
   "private": true,
@@ -14,6 +15,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "build": "react-scripts build",
     "test": "jest"
   },
@@ -35,6 +38,7 @@
     "@typescript-eslint/parser": "^5.33.0",
     "eslint": "^8.22.0",
     "eslint-plugin-react": "^7.30.1",
+    "gh-pages": "^4.0.0",
     "jest": "^28.1.3"
   }
 }
