@@ -5,11 +5,17 @@ import {IconsMenu} from "./icons_menu/IconsMenu";
 import {ItemStyleInput} from "./item_style_input/ItemStyleInput";
 import {FileSelector} from "./file_selector/FileSelector";
 import {GoColorfulButton} from "./go_colorful_button/GoColorfulButton";
-import {IStylingToolProps} from "./IStylingToolProps";
+import {IVisualContext} from "../App";
+import {IConnectedTreeItem} from "../tree/ITree";
 
 type StylingToolStatus = "open" | "closed";
 
-export const StylingTool: FC<IStylingToolProps> = (props) => {
+interface IStylingToolActionProps {
+	updateVisualState: (state: Partial<IVisualContext<IConnectedTreeItem>>) => void;
+	setData: (data: IConnectedTreeItem[]) => void;
+}
+
+export const StylingTool: FC<IStylingToolActionProps> = (props) => {
 	const [status, setStatus] = useState<StylingToolStatus>("closed");
 
 	const toggleStatus = () => {
@@ -34,7 +40,7 @@ export const StylingTool: FC<IStylingToolProps> = (props) => {
 				<HiOutlineChevronDoubleLeft/>
 			</div>
 			<ItemStyleInput updateVisualState={props.updateVisualState}/>
-			<FileSelector updateVisualState={props.updateVisualState}/>
+			<FileSelector setData={props.setData}/>
 			<IconsMenu updateVisualState={props.updateVisualState}/>
 			<GoColorfulButton updateVisualState={props.updateVisualState}/>
 		</div>

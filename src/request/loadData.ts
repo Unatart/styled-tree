@@ -2,7 +2,7 @@ import {ITree} from "../tree/ITree";
 
 const CACHE_STORAGE_NAME = "storeTreeCache";
 
-export const loadTreeData = async (url?: string) => {
+export const loadData = async (url?: string) => {
 	if (!url) {
 		return Promise.reject("Provide url for request");
 	}

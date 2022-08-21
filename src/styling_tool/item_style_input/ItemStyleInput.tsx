@@ -1,9 +1,9 @@
 import {ChangeEvent, ChangeEventHandler, CSSProperties, useState} from "react";
 import "./ItemStyleInput.css";
-import {IStylingToolProps} from "../IStylingToolProps";
+import {IStyleActionProps} from "../IStylingTool";
 import {DEFAULT_INPUT_SCHEME} from "../schemes";
 
-export const ItemStyleInput = (props: IStylingToolProps) => {
+export const ItemStyleInput = (props: IStyleActionProps) => {
 	const [style, setStyle] = useState<string>(JSON.stringify(DEFAULT_INPUT_SCHEME));
 
 	const handleChange: ChangeEventHandler = (event: ChangeEvent<HTMLInputElement>) => {

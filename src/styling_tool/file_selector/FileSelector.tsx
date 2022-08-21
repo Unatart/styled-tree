@@ -1,12 +1,15 @@
 import "./FileSelector.css";
 import {ChangeEvent, FC, useEffect, useState} from "react";
-import {IStylingToolProps} from "../IStylingToolProps";
+import {IConnectedTreeItem} from "../../tree/ITree";
 
-export const FileSelector: FC<IStylingToolProps> = (props) => {
+interface IFileSelectorProps {
+	setData: (data: IConnectedTreeItem[]) => void;
+}
+
+export const FileSelector: FC<IFileSelectorProps> = ({ setData }) => {
 	const [reader] = useState(new FileReader());
 
 	const onChange = (event: ChangeEvent<HTMLInputElement>) => {
-		console.log(event);
 		const files = event.target.files;
 		if (files) {
 			reader.readAsText(files[0]);
@@ -15,7 +18,12 @@ export const FileSelector: FC<IStylingToolProps> = (props) => {
 
 	useEffect(() => {
 		const listener = (event: ProgressEvent<FileReader>) => {
-			console.log(event.target?.result);
+			const file = event.target?.result;
+			if (file && typeof file === "string") {
+				const tree: IConnectedTreeItem[] = JSON.parse(file).result;
+				console.log(tree);
+				setData(tree);
+			}
 		};
 
 		reader.addEventListener("load", listener);

@@ -1,8 +1,8 @@
 import "./IconsMenu.css";
 import {ICON_VARIATIONS} from "../../constants";
-import {IStylingToolProps} from "../IStylingToolProps";
+import {IStyleActionProps} from "../IStylingTool";
 
-export const IconsMenu = (props: IStylingToolProps) => {
+export const IconsMenu = (props: IStyleActionProps) => {
 	return (
 		<div className="dropdown">
 			<button className="drop-button">Icon style</button>

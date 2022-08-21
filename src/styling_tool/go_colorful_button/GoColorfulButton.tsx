@@ -2,9 +2,9 @@ import {VisualContext} from "../../App";
 import {CSSProperties, FC, useContext, useEffect, useState} from "react";
 import "./GoColorfulButton.css";
 import {COLORFUL_SCHEME} from "../schemes";
-import {IStylingToolProps} from "../IStylingToolProps";
+import {IStyleActionProps} from "../IStylingTool";
 
-export const GoColorfulButton: FC<IStylingToolProps> = (props) => {
+export const GoColorfulButton: FC<IStyleActionProps> = (props) => {
 	const [toggled, setToggled] = useState(false);
 	const [defaultStyles, setDefaultStyles] = useState<CSSProperties>({});
 	const context = useContext(VisualContext);

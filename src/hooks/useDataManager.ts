@@ -2,26 +2,19 @@ import {useEffect, useState} from "react";
 import {ITreeManagerConfig, TreeManagerType} from "../tree/createTreeManager";
 
 export const useDataManager = <T>(
-	dataUrl: string,
+	data: T[] | undefined,
 	treeManagerConfig: ITreeManagerConfig,
-	loadData: (url: string) => Promise<T[]>,
 	getTreeManager: (tree: T[], config: ITreeManagerConfig) => TreeManagerType<T>
-): [TreeManagerType<T> | undefined, string | undefined] => {
+): TreeManagerType<T> | undefined => {
 	const [dataManager, setDataManager] = useState<TreeManagerType<T> | undefined>(undefined);
-	const [error, setError] = useState<string | undefined>(undefined);
     
 	useEffect(() => {
-		loadData(dataUrl)
-			.then((data) => {
-				if (dataManager) {
-					return;
-				}
-				setDataManager(getTreeManager(data, treeManagerConfig));
-			})
-			.catch((error) => {
-				setError(error);
-			});
-	}, []);
+		if (!data || data.length === 0) {
+			return;
+		}
 
-	return [dataManager, error];
+		setDataManager(getTreeManager(data, treeManagerConfig));
+	}, [data]);
+
+	return dataManager;
 };

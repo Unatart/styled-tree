@@ -2,12 +2,11 @@ import {useCallback, useContext, useEffect, useState} from "react";
 import "./VirtualScroll.css";
 import {ScrollArea} from "./scroll-area/ScrollArea";
 import {useActualCallback} from "../hooks/useActualCallback";
-import {ITreeManagerConfig, treeActionType, TreeManagerType} from "../tree/createTreeManager";
+import {treeActionType, TreeManagerType} from "../tree/createTreeManager";
 import {IConnectedTreeItem} from "../tree/ITree";
 import {useIntersectionObserver} from "../intersection_observer/useIntersectionObserver";
 import {IntersectionObserverElement} from "../intersection_observer/IntersectionObserverElement";
 import {ITreeElementProps} from "../tree/tree_element/createTreeElement";
-import {useDataManager} from "../hooks/useDataManager";
 import {IScrollElementResult} from "./IVirtualScroll";
 import {VisualContext} from "../App";
 
@@ -18,24 +17,18 @@ interface IVirtualScrollProps<T> {
 	tolerance: number;
 	verticalMargin: number;
 	observerConfig: IntersectionObserverInit;
-	treeManagerConfig: ITreeManagerConfig;
 	createScrollItem: (props: ITreeElementProps) => IScrollElementResult;
-	loadData: (url: string) => Promise<T[]>;
-	createTreeManager: (tree: T[], config: ITreeManagerConfig) => TreeManagerType<T>;
+	dataManager: TreeManagerType<T>;
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
 	tolerance,
 	verticalMargin,
 	observerConfig,
-	treeManagerConfig,
 	createScrollItem,
-	loadData,
-	createTreeManager
+	dataManager
 }: IVirtualScrollProps<T>) => {
 	const context = useContext(VisualContext);
-
-	const [dataManager, error] = useDataManager(context.dataUrl, treeManagerConfig, loadData, createTreeManager);
 	const [renderData, setRenderData] = useState<T[]>([]);
 	const [elements, setElements] = useState<IScrollElementResult[]>([]);
 	const [maxBottomOffset, setMaxBottomOffset] = useState(0);
@@ -154,16 +147,9 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	}, [elements.length]);
 
 	useEffect(() => {
+		// TODO: улучшить
 		updateData("update", true);
 	}, [context.itemStyles]);
-
-	if (error) {
-		return (
-			<div>
-				{error}
-			</div>
-		);
-	}
 
 	return (
 		<div className={"virtual-scroll-container"}>
