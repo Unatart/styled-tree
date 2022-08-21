@@ -1,7 +1,7 @@
-import {IConnectedTreeItem} from "../ITree";
-import {createRef, CSSProperties, ReactNode, Ref} from "react";
+import {IConnectedTreeItem} from "../tree/ITree";
+import {createRef, CSSProperties, Ref} from "react";
 import {ICON_VARIATIONS, TREE_ELEMENT_X_OFFSET_PX} from "../../constants";
-import {IScrollElementResult} from "../../virtual_scroll/IVirtualScroll";
+import {IScrollElementResult} from "../virtual_scroll/IVirtualScroll";
 import "./TreeElement.css";
 import {
 	AiFillFolder,
@@ -29,7 +29,7 @@ export const createTreeElement = (render: (props: ITreeElementProps) => JSX.Elem
 	return { render: (props) => render({ ...props, ref }), ref };
 };
 
-export const render = ({ data, index, transformStyle, styles, iconStyle, toggleHide, ref }: ITreeElementProps) => {
+export const renderItem = ({ data, index, transformStyle, styles, iconStyle, toggleHide, ref }: ITreeElementProps) => {
 	let icon = null;
 
 	if (!data) {
@@ -55,6 +55,47 @@ export const render = ({ data, index, transformStyle, styles, iconStyle, toggleH
 			key={index}
 			className={"element"}
 			style={{marginLeft: `${(data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...styles, ...transformStyle}}
+			ref={ref}
+		>
+			<div key={"button"} className={"element-button"} onClick={() => toggleHide(data.index || index)}>{icon}</div>
+			<div key={"label"} className={"element-label"}>{data.label}</div>
+		</div>
+	);
+};
+
+export const renderItemV2 = ({ data, index, transformStyle, styles, iconStyle, toggleHide, ref }: ITreeElementProps) => {
+	let icon = null;
+
+	if (!data) {
+		return null;
+	}
+
+	if (data.children.length) {
+		switch (iconStyle) {
+			case ICON_VARIATIONS.MINUS_PLUS:
+				icon = data.hiddenChildren ? <AiOutlinePlusCircle/> : <AiOutlineMinusCircle/>;
+				break;
+			case ICON_VARIATIONS.CHEVRON:
+				icon = data.hiddenChildren ? <TiChevronRight/> : <TiChevronRightOutline/>;
+				break;
+			case ICON_VARIATIONS.FOLDER:
+				icon = data.hiddenChildren ? <AiFillFolder/> : <AiOutlineFolderOpen/>;
+				break;
+		}
+	}
+
+	const childStyles = {
+		backgroundColor: data.parent ? "red" : undefined,
+		height: `${data.children.length * 30}px`,
+		color: data.parent ? "white" : undefined,
+		fontWeight: "bold",
+	};
+
+	return (
+		<div
+			key={index}
+			className={"element"}
+			style={{marginLeft: `${(data.level || 0) * TREE_ELEMENT_X_OFFSET_PX}px`, ...styles, ...transformStyle, ...childStyles}}
 			ref={ref}
 		>
 			<div key={"button"} className={"element-button"} onClick={() => toggleHide(data.index || index)}>{icon}</div>

@@ -1,5 +1,5 @@
 import {MutableRefObject} from "react";
-import {ITreeElementProps} from "../tree/tree_element/createTreeElement";
+import {ITreeElementProps} from "../tree_element/createTreeElement";
 
 export interface IScrollElementResult {
     render: (props: ITreeElementProps) => JSX.Element | null;

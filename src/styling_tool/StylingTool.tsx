@@ -5,8 +5,8 @@ import {IconsMenu} from "./icons_menu/IconsMenu";
 import {ItemStyleInput} from "./item_style_input/ItemStyleInput";
 import {FileSelector} from "./file_selector/FileSelector";
 import {StyleSelector} from "./style_selector/StyleSelector";
-import {IVisualContext} from "../App";
-import {IConnectedTreeItem} from "../tree/ITree";
+import {IConnectedTreeItem} from "../scroll_component/tree/ITree";
+import {IVisualContext} from "../scroll_component/ScrollComponent";
 
 type StylingToolStatus = "open" | "closed";
 
@@ -15,7 +15,7 @@ interface IStylingToolActionProps {
 	setData: (data: IConnectedTreeItem[]) => void;
 }
 
-export const StylingTool: FC<IStylingToolActionProps> = (props) => {
+export const StylingTool: FC<IStylingToolActionProps> = ({ updateVisualState, setData }) => {
 	const [status, setStatus] = useState<StylingToolStatus>("closed");
 
 	const toggleStatus = () => {
@@ -39,10 +39,10 @@ export const StylingTool: FC<IStylingToolActionProps> = (props) => {
 			<div className={"close-button"} onClick={toggleStatus}>
 				<HiOutlineChevronDoubleLeft/>
 			</div>
-			<IconsMenu updateVisualState={props.updateVisualState}/>
-			<StyleSelector updateVisualState={props.updateVisualState}/>
-			<FileSelector setData={props.setData}/>
-			<ItemStyleInput updateVisualState={props.updateVisualState}/>
+			<IconsMenu updateVisualState={updateVisualState}/>
+			<StyleSelector updateVisualState={updateVisualState}/>
+			<FileSelector setData={setData}/>
+			<ItemStyleInput updateVisualState={updateVisualState}/>
 		</div>
 	);
 };

@@ -3,7 +3,7 @@ import "./ItemStyleInput.css";
 import {IStyleActionProps} from "../IStylingTool";
 import {FLAMINGO_SCHEME} from "../schemes";
 
-export const ItemStyleInput = (props: IStyleActionProps) => {
+export const ItemStyleInput = ({ updateVisualState }: IStyleActionProps) => {
 	const [style, setStyle] = useState<string>(JSON.stringify(FLAMINGO_SCHEME));
 
 	const handleChange: ChangeEventHandler = (event: ChangeEvent<HTMLInputElement>) => {
@@ -13,7 +13,7 @@ export const ItemStyleInput = (props: IStyleActionProps) => {
 	const onClick = () => {
 		if (style) {
 			const stylesObj: CSSProperties = JSON.parse(style.replace(/&quot;/ig, "\""));
-			props.updateVisualState({itemStyles: stylesObj});
+			updateVisualState({itemStyles: stylesObj});
 		}
 	};
 

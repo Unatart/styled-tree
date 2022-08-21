@@ -88,7 +88,7 @@ export class TreeManager implements ITreeManager<IConnectedTreeItem> {
 		let to = this.chunkLimits[1];
 
 		if (action === "update") {
-			this.chunkLimits[1] = to > 0 ? to : to + this.config.pageSize;
+			this.chunkLimits[1] = to > this.config.pageSize ? to : to + this.config.pageSize;
 			return prevLimits;
 		}
 
@@ -181,7 +181,7 @@ export class TreeManager implements ITreeManager<IConnectedTreeItem> {
 
 		this.chunk = result;
 		const lastElement = result[result.length - 1].index;
-		this.chunkLimits[1] = lastElement ?  lastElement + 1 : end - 1;
+		this.chunkLimits[1] = lastElement !== undefined ?  lastElement + 1 : end - 1;
 
 		return result;
 	};

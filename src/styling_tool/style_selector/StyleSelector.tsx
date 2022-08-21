@@ -10,13 +10,13 @@ const STYLES = {
 	"RAINBOW_SCHEME": RAINBOW_SCHEME,
 };
 
-export const StyleSelector: FC<IStyleActionProps> = (props) => {
+export const StyleSelector: FC<IStyleActionProps> = ({ updateVisualState }) => {
 	return (
 		<UiVariationBlock
 			title={"Styles:"}
 			keys={Object.keys(STYLES)}
 			buttonTitle={"Select theme"}
-			onClick={(key) => props.updateVisualState({ itemStyles: STYLES[key as keyof typeof STYLES] as CSSProperties })}
+			onClick={(key) => updateVisualState({ itemStyles: STYLES[key as keyof typeof STYLES] as CSSProperties })}
 		/>
 	);
 };

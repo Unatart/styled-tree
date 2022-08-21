@@ -1,4 +1,4 @@
-import {ITree} from "../tree/ITree";
+import {ITree} from "../scroll_component/tree/ITree";
 
 const CACHE_STORAGE_NAME = "storeTreeCache";
 

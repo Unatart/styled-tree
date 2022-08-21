@@ -1,6 +1,6 @@
 import "./FileSelector.css";
 import {ChangeEvent, FC, useEffect, useState} from "react";
-import {IConnectedTreeItem} from "../../tree/ITree";
+import {IConnectedTreeItem} from "../../scroll_component/tree/ITree";
 import {UiVariationBlock} from "../ui_variation_block/UiVariationBlock";
 import {loadData} from "../../request/loadData";
 
