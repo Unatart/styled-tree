@@ -4,7 +4,7 @@ import {HiOutlineChevronDoubleLeft, HiOutlineChevronDoubleRight} from "react-ico
 import {IconsMenu} from "./icons_menu/IconsMenu";
 import {ItemStyleInput} from "./item_style_input/ItemStyleInput";
 import {FileSelector} from "./file_selector/FileSelector";
-import {GoColorfulButton} from "./go_colorful_button/GoColorfulButton";
+import {StyleSelector} from "./style_selector/StyleSelector";
 import {IVisualContext} from "../App";
 import {IConnectedTreeItem} from "../tree/ITree";
 
@@ -39,10 +39,10 @@ export const StylingTool: FC<IStylingToolActionProps> = (props) => {
 			<div className={"close-button"} onClick={toggleStatus}>
 				<HiOutlineChevronDoubleLeft/>
 			</div>
-			<ItemStyleInput updateVisualState={props.updateVisualState}/>
-			<FileSelector setData={props.setData}/>
 			<IconsMenu updateVisualState={props.updateVisualState}/>
-			<GoColorfulButton updateVisualState={props.updateVisualState}/>
+			<StyleSelector updateVisualState={props.updateVisualState}/>
+			<FileSelector setData={props.setData}/>
+			<ItemStyleInput updateVisualState={props.updateVisualState}/>
 		</div>
 	);
 };

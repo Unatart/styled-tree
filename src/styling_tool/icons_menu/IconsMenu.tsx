@@ -1,21 +1,18 @@
-import "./IconsMenu.css";
 import {ICON_VARIATIONS} from "../../constants";
 import {IStyleActionProps} from "../IStylingTool";
+import {useContext} from "react";
+import {VisualContext} from "../../App";
+import {UiVariationBlock} from "../ui_variation_block/UiVariationBlock";
 
 export const IconsMenu = (props: IStyleActionProps) => {
+	const context = useContext(VisualContext);
+
 	return (
-		<div className="dropdown">
-			<button className="drop-button">Icon style</button>
-			<div className="dropdown-content">
-				{Object.keys(ICON_VARIATIONS).map((key) => {
-					const iconStyle = ICON_VARIATIONS[key as keyof typeof ICON_VARIATIONS];
-					return (
-						<div key={key} onClick={() => props.updateVisualState({ iconStyle })}>
-							{ key }
-						</div>
-					);
-				})}
-			</div>
-		</div>
+		<UiVariationBlock
+			title={"Icons:"}
+			keys={Object.keys(ICON_VARIATIONS)}
+			buttonTitle={context.iconStyle}
+			onClick={(key) => props.updateVisualState({ iconStyle: ICON_VARIATIONS[key as keyof typeof ICON_VARIATIONS] })}
+		/>
 	);
 };

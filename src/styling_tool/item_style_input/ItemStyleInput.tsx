@@ -1,10 +1,10 @@
 import {ChangeEvent, ChangeEventHandler, CSSProperties, useState} from "react";
 import "./ItemStyleInput.css";
 import {IStyleActionProps} from "../IStylingTool";
-import {DEFAULT_INPUT_SCHEME} from "../schemes";
+import {FLAMINGO_SCHEME} from "../schemes";
 
 export const ItemStyleInput = (props: IStyleActionProps) => {
-	const [style, setStyle] = useState<string>(JSON.stringify(DEFAULT_INPUT_SCHEME));
+	const [style, setStyle] = useState<string>(JSON.stringify(FLAMINGO_SCHEME));
 
 	const handleChange: ChangeEventHandler = (event: ChangeEvent<HTMLInputElement>) => {
 		setStyle(event.target.value);
