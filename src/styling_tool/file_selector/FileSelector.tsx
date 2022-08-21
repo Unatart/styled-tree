@@ -9,9 +9,9 @@ interface IFileSelectorProps {
 }
 
 const FILES = {
-	"100000 CHILDS": "/data_samples/sample_big.json",
-	"LEVELS": "/data_samples/sample_levels.json",
-	"TASK_EXAMPLE": "/data_samples/sample_task.json"
+	"100000 CHILDS": "data_samples/sample_big.json",
+	"LEVELS": "data_samples/sample_levels.json",
+	"TASK_EXAMPLE": "data_samples/sample_task.json"
 };
 
 export const FileSelector: FC<IFileSelectorProps> = ({ setData }) => {
