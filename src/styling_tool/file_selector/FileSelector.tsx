@@ -56,7 +56,7 @@ export const FileSelector: FC<IFileSelectorProps> = ({ setData }) => {
 				<div className={"select-file-head"}>Load file:</div>
 				<label className={"custom-file-upload"} htmlFor={"file-input"}>
 					<input id={"file-input"} type={"file"} accept={".json"} onChange={onChange}/>
-					<div>Click me</div>
+					<div>Click</div>
 				</label>
 			</div>
 		</>

@@ -11,14 +11,14 @@ export const COLORFUL_SCHEME = {
 export const FLAMINGO_SCHEME = {
 	"color": "pink",
 	"fontWeight": "normal",
-	"background": "violet",
+	"backgroundColor": "violet",
 	"border": "1px solid light-pink"
 };
 
 export const RAINBOW_SCHEME = {
 	"color": "#ff5959",
 	"fontWeight": "bold",
-	"background": "#000000",
+	"backgroundColor": "#000000",
 	"height": "80px",
 	"boxShadow": "blue 0px 0px 0px 2px inset, rgb(255, 255, 255) 10px -10px 0px -3px, rgb(31, 193, 27) 10px -10px, rgb(255, 255, 255) 20px -20px 0px -3px, rgb(255, 217, 19) 20px -20px, rgb(255, 255, 255) 30px -30px 0px -3px, rgb(255, 156, 85) 30px -30px, rgb(255, 255, 255) 40px -40px 0px -3px, rgb(255, 85, 85) 40px -40px",
 };

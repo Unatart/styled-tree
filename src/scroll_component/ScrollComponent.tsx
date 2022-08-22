@@ -10,8 +10,10 @@ import {VirtualScroll} from "./virtual_scroll/VirtualScroll";
 interface IScrollComponentProps {
     withStylingTool: boolean;
     initialData?: IConnectedTreeItem[];
+	pageSize: number;
     tolerance: number;
     offsetDenominator: number;
+	offsetRecalculationEnabled: boolean;
     render: (props: ITreeElementProps) => JSX.Element | null;
 }
 
@@ -26,8 +28,10 @@ export const VisualContext = React.createContext<IVisualContext>(defaultValue);
 export const ScrollComponent: FC<IScrollComponentProps> = ({
 	withStylingTool = false,
 	initialData,
+	pageSize,
 	tolerance,
 	offsetDenominator,
+	offsetRecalculationEnabled,
 	render
 }) => {
 	const [visualContextState, setState] = useState(defaultValue);
@@ -49,11 +53,13 @@ export const ScrollComponent: FC<IScrollComponentProps> = ({
 					setData={setData}
 				/>}
 				<VirtualScroll
+					pageSize={pageSize}
 					offsetDenominator={offsetDenominator}
 					tolerance={tolerance}
 					createScrollItem={() => createTreeElement(render)}
-					observerConfig={{ threshold: 0.25 }}
+					observerConfig={{ threshold: 0.1 }}
 					initialData={data}
+					offsetRecalculationEnabled={offsetRecalculationEnabled}
 				/>
 			</MainScreen>
 		</VisualContext.Provider>

@@ -16,23 +16,29 @@ const TOP_OBSERVER_ELEMENT_ID = "top-observer-element-id";
 const BOTTOM_OBSERVER_ELEMENT_ID = "bottom-observer-element-id";
 
 interface IVirtualScrollProps<T> {
+	pageSize: number;
 	tolerance: number;
 	observerConfig: IntersectionObserverInit;
 	createScrollItem: (props: ITreeElementProps) => IScrollElementResult;
 	initialData?: T[];
 	offsetDenominator: number;
+	offsetRecalculationEnabled: boolean;
 }
 
 export const VirtualScroll = <T extends IConnectedTreeItem>({
+	pageSize,
 	tolerance,
 	observerConfig,
 	createScrollItem,
 	initialData,
-	offsetDenominator
+	offsetDenominator,
+	offsetRecalculationEnabled
 }: IVirtualScrollProps<T>) => {
 	const context = useContext(VisualContext);
-
-	const [DataManager, setDataManager] = useState<ITreeManager<IConnectedTreeItem> | undefined>(() => initialData ? new TreeManager(initialData, { pageSize: BASE_PAGE_SIZE, tolerance: BASE_TOLERANCE }) : undefined);
+	const [DataManager, setDataManager] = useState<ITreeManager<IConnectedTreeItem> | undefined>(() => initialData
+		? new TreeManager(initialData, { pageSize: BASE_PAGE_SIZE, tolerance: BASE_TOLERANCE })
+		: undefined
+	);
 
 	const [itemsData, setItemsData] = useState<IConnectedTreeItem[]>([]);
 	const [elements, setElements] = useState<IScrollElementResult[]>([]);
@@ -41,6 +47,8 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	const [topOffset, setTopOffset] = useState(0);
 	const [bottomOffset, setBottomOffset] = useState(0);
 	const [areaBottomPadding, setAreaBottomPadding] = useState(0);
+	const [nextUpdateLimits, setNextUpdateLimits] = useState<[number, number | undefined]>([0, undefined]);
+	const visibility = useRef<"visible" | "hidden">("visible");
 
 	const clearState = () => {
 		setMaxBottomOffset(0);
@@ -52,29 +60,17 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		visibility.current = "hidden";
 	};
 
-	const visibility = useRef<"visible" | "hidden">("visible");
-
 	const updateOnAction = useActualCallback((action: treeActionType) => {
-		if (!elements || elements.length === 0 || itemsData.length === 0 || visibility.current === "hidden") {
+		if (!elements.length || !itemsData.length || visibility.current === "hidden" || (itemsData[0].index === 0 && action === "up") || !DataManager) {
 			return;
 		}
 
-		if (itemsData[0].index === 0 && action === "up") {
+		const data = DataManager.getNextChunk(action);
+		if (!data.length || (data.length < pageSize && itemsData.length < pageSize && action !== "update")) {
 			return;
 		}
-
-		const height = elements[0]?.ref?.current?.getBoundingClientRect().height;
-		if (elements.length && height) {
-			const data = DataManager?.getNextChunk(action);
-			if (!data || (data.length === 0 || (
-				data[data.length - 1].index === itemsData[itemsData.length - 1].index &&
-				data[0].index === itemsData[0].index
-			))) {
-				return;
-			}
-			setItemsData(data);
-			updateVisual(action);
-		}
+		setItemsData(data);
+		updateVisual(action);
 	});
 
 	const updateVisual = useActualCallback((action: treeActionType) => {
@@ -86,22 +82,32 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		switch (action) {
 			case "up":
 				if (topOffset === 0) {
-					newElements = elements || [];
-				} else {
-					newElements = moveUp(elements, offsetDenominator, tolerance);
+					return;
+				}
+				newElements = moveUp(elements, offsetDenominator, tolerance);
+				if (offsetRecalculationEnabled) {
+					setNextUpdateLimits([tolerance, 0]);
+					visibility.current = "hidden";
 				}
 				break;
 			case "down":
 				newElements = moveDown(elements, 0, tolerance, offsetDenominator);
+				if (offsetRecalculationEnabled) {
+					setNextUpdateLimits([elements.length - tolerance, elements.length]);
+					visibility.current = "hidden";
+				}
 				break;
 			case "update":
-				newElements = update(elements, offsetDenominator, topOffset);
-				visibility.current = "hidden";
+				newElements = update(elements, offsetDenominator, topOffset, nextUpdateLimits[0], nextUpdateLimits[1]);
+				if (offsetRecalculationEnabled) {
+					setNextUpdateLimits([0, elements.length]);
+					visibility.current = "hidden";
+				}
 		}
 
-		const bottom = newElements[newElements.length - 1].transformY || 0;
+		const bottom = newElements[newElements.length - tolerance]?.transformY || 0;
 		setTopOffset(newElements[0].transformY || 0);
-		setBottomOffset(bottom);
+		setBottomOffset(bottom ? newElements[newElements.length - 1]?.transformY || 0 : 0);
 		setElements(newElements);
 		if (bottom > maxBottomOffset) {
 			setMaxBottomOffset(bottom);
@@ -110,7 +116,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 	});
 
 	const onTopIntersectionCallback: IntersectionObserverCallback = async ([entry]) => entry.isIntersecting ? updateOnAction("up") : void 0;
-	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) =>  entry.isIntersecting ? updateOnAction("down") : void 0;
+	const onBottomIntersectionCallback: IntersectionObserverCallback = async ([entry]) => entry.isIntersecting ? updateOnAction("down") : void 0;
 	const [topObsElement, bottomObsElement] = useIntersectionObserver(onTopIntersectionCallback, onBottomIntersectionCallback, observerConfig, visibility.current === "visible");
 	const toggleHide = (i: number) => DataManager?.toggleHide(i) ? updateOnAction("update") : void 0;
 
@@ -132,6 +138,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		if (elements && elements.length && visibility.current === "hidden") {
 			updateVisual("update");
 			visibility.current = "visible";
+			setNextUpdateLimits([0, undefined]);
 		}
 	}, [elements.length && visibility.current]);
 
@@ -139,7 +146,7 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 		<div className={"virtual-scroll-container"}>
 			<div className={"virtual-scroll"}>
 				<ScrollArea style={{ paddingTop: `${topOffset}px`, paddingBottom: `${areaBottomPadding}px` }}>
-					{elements?.map((element, index) => element.render({
+					{elements?.map((element, index) => element?.render?.({
 						data: itemsData[index],
 						index,
 						transformStyle: { transform: `translateY(${element.transformY}px)`, visibility: visibility.current },
@@ -150,12 +157,12 @@ export const VirtualScroll = <T extends IConnectedTreeItem>({
 					<IntersectionObserverElement
 						key={TOP_OBSERVER_ELEMENT_ID}
 						ref={topObsElement}
-						style={{transform: `translateY(${topOffset}px)`}}
+						style={{transform: `translateY(${topOffset}px)`, display: topOffset === 0 ? "none" : "block"}}
 					/>
 					<IntersectionObserverElement
 						key={BOTTOM_OBSERVER_ELEMENT_ID}
 						ref={bottomObsElement}
-						style={{transform: `translateY(${bottomOffset}px)`}}
+						style={{transform: `translateY(${bottomOffset}px)`, display: bottomOffset === 0 ? "none" : "block"}}
 					/>
 				</ScrollArea>
 			</div>

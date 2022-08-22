@@ -94,7 +94,7 @@ export class TreeManager implements ITreeManager<IConnectedTreeItem> {
 
 		let from = this.chunkLimits[0];
 		if (action === "down") {
-			const toleranceLimit = this.chunk[prevLimits[0] + this.config.tolerance]?.index;
+			const toleranceLimit = this.chunk[this.config.tolerance]?.index;
 			const newFrom = toleranceLimit !== undefined ? toleranceLimit : from + this.config.tolerance;
 			if (to + this.config.tolerance > this.traverseArray.length - 1 && this.stackContext.length === 0) {
 				from -= (to - this.traverseArray.length);
@@ -109,7 +109,7 @@ export class TreeManager implements ITreeManager<IConnectedTreeItem> {
 		}
 
 		if (action === "up") {
-			const toleranceLimit = this.chunk[this.chunkLimits[1] - this.config.tolerance]?.index;
+			const toleranceLimit = this.chunk[this.chunk.length - this.config.tolerance]?.index;
 			const nextTo = Math.max(this.config.pageSize, toleranceLimit !== undefined ? toleranceLimit : to - this.config.tolerance);
 			const nextFrom = nextTo - this.config.pageSize;
 			this.chunkLimits = [Math.max(0, nextFrom), nextTo];
@@ -120,9 +120,12 @@ export class TreeManager implements ITreeManager<IConnectedTreeItem> {
 	private goUp(from: number, to: number, startIndex: number) {
 		let result = this.chunk.filter((element) => element.index !== undefined && element.index >= startIndex && element.index < to);
 		let start = from;
-		let i = startIndex - 1;
-		while (i >= Math.max(start, 0)) {
+		let i = (result[0]?.index || startIndex) - 1;
+		while (i >= Math.max(start, 0) || result.length !== this.config.pageSize) {
 			let child: IConnectedTreeItem | undefined = this.traverseArray[i];
+			if (child === undefined) {
+				break;
+			}
 			let firstParentWithHiddenChild: IConnectedTreeItem | undefined;
 			while (child) {
 				if (child.parent?.hiddenChildren) {

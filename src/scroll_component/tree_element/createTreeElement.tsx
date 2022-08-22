@@ -29,12 +29,8 @@ export const createTreeElement = (render: (props: ITreeElementProps) => JSX.Elem
 	return { render: (props) => render({ ...props, ref }), ref };
 };
 
-export const renderItem = ({ data, index, transformStyle, styles, iconStyle, toggleHide, ref }: ITreeElementProps) => {
+const computeIcon = (data: IConnectedTreeItem, iconStyle?: string) => {
 	let icon = null;
-
-	if (!data) {
-		return null;
-	}
 
 	if (data.children.length) {
 		switch (iconStyle) {
@@ -49,6 +45,16 @@ export const renderItem = ({ data, index, transformStyle, styles, iconStyle, tog
 				break;
 		}
 	}
+
+	return icon;
+};
+
+export const renderItem = ({ data, index, transformStyle, styles, iconStyle, toggleHide, ref }: ITreeElementProps) => {
+	if (!data) {
+		return null;
+	}
+
+	const icon = computeIcon(data, iconStyle);
 
 	return (
 		<div
@@ -64,25 +70,11 @@ export const renderItem = ({ data, index, transformStyle, styles, iconStyle, tog
 };
 
 export const renderItemV2 = ({ data, index, transformStyle, styles, iconStyle, toggleHide, ref }: ITreeElementProps) => {
-	let icon = null;
-
 	if (!data) {
 		return null;
 	}
 
-	if (data.children.length) {
-		switch (iconStyle) {
-			case ICON_VARIATIONS.MINUS_PLUS:
-				icon = data.hiddenChildren ? <AiOutlinePlusCircle/> : <AiOutlineMinusCircle/>;
-				break;
-			case ICON_VARIATIONS.CHEVRON:
-				icon = data.hiddenChildren ? <TiChevronRight/> : <TiChevronRightOutline/>;
-				break;
-			case ICON_VARIATIONS.FOLDER:
-				icon = data.hiddenChildren ? <AiFillFolder/> : <AiOutlineFolderOpen/>;
-				break;
-		}
-	}
+	const icon = computeIcon(data, iconStyle);
 
 	const childStyles = {
 		backgroundColor: data.parent ? "red" : undefined,
