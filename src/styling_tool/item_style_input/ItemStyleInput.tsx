@@ -5,15 +5,22 @@ import {FLAMINGO_SCHEME} from "../schemes";
 
 export const ItemStyleInput = ({ updateVisualState }: IStyleActionProps) => {
 	const [style, setStyle] = useState<string>(JSON.stringify(FLAMINGO_SCHEME));
+	const [error, setError] = useState<string>("");
 
 	const handleChange: ChangeEventHandler = (event: ChangeEvent<HTMLInputElement>) => {
 		setStyle(event.target.value);
+		setError("");
 	};
 
 	const onClick = () => {
 		if (style) {
-			const stylesObj: CSSProperties = JSON.parse(style.replace(/&quot;/ig, "\""));
-			updateVisualState({itemStyles: stylesObj});
+			try {
+				const stylesObj: CSSProperties = JSON.parse(style.replace(/&quot;/ig, "\""));
+				updateVisualState({itemStyles: stylesObj});
+			} catch (e) {
+				setError(`Catch error: ${e}`);
+				setStyle(JSON.stringify(FLAMINGO_SCHEME));
+			}
 		}
 	};
 
@@ -25,6 +32,7 @@ export const ItemStyleInput = ({ updateVisualState }: IStyleActionProps) => {
 				value={style}
 				onChange={handleChange}
 			/>
+			{error && <div className={"styling-error"}>{error}</div>}
 			<div className={"styling-button"} onClick={onClick}>Submit</div>
 		</div>
 	);

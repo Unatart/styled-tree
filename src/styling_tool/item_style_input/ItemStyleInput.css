@@ -27,6 +27,22 @@
     border-radius: 15px;
 }
 
+.styling-error {
+    margin: 10px 10px;
+    min-width: 100px;
+    max-width: 300px;
+    white-space: initial;
+    font-size: 14pt;
+    color: var(--black-font);
+}
+
+.styling-error::after {
+    display: block;
+    content: "Try to provide CSS object, look at basic variant";
+    color: var(--bright-font);
+    font-weight: bold;
+}
+
 .styling-input .input:focus {
     outline: none !important;
     border: 3px solid rgba(0, 0, 0, 0.35);
